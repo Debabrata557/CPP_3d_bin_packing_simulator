@@ -1,17 +1,4 @@
-#include <vector>
-
-#include "config.h"
-#include "helper.h"
-
-class Controller {
-   private:
-    /* data */
-   public:
-    Controller(/* args */);
-    ~Controller();
-    bool check(const std::vector<std::vector<int>> &state, std::pair<int, int> pos, int lx, int ly, int lz);
-    std::vector<int> first_fit(std::vector<std::vector<int>> &state, std::vector<int> &dim);
-};
+#include "controller.h"
 
 Controller::Controller(/* args */) {
 }
@@ -45,12 +32,15 @@ bool Controller::check(const std::vector<std::vector<int>> &state, std::pair<int
         // # print(mat.shape)
         // h=np.max(mat)
         // #print('max h: ',h)
+        // std::cout << max_height << " " << BIN_HEIGHT << " " << lz << "\n";
         if (max_height + lz >= BIN_HEIGHT) {
+            // std::cout << "return"
+            //           << "\n";
             return 0;
         }
 
         // tolerance=1
-        int support = grid_count(state, minx, maxx + 1, miny, maxy + 1, max_height, CONTROLLER_TOLERANCE);
+        double support = grid_count(state, minx, maxx + 1, miny, maxy + 1, max_height, CONTROLLER_TOLERANCE) / (double)(lx * ly);
         int corner_support = 0;
         corner_support += (abs(corner1_max - max_height) <= CONTROLLER_TOLERANCE) && (abs(corner1_min - max_height) <= CONTROLLER_TOLERANCE);
         corner_support += (abs(corner2_max - max_height) <= CONTROLLER_TOLERANCE) && (abs(corner2_min - max_height) <= CONTROLLER_TOLERANCE);
@@ -75,7 +65,7 @@ std::vector<int> Controller::first_fit(std::vector<std::vector<int>> &state, std
             int flag = Controller::check(state, {i, j}, lx, ly, lz);
             if (flag)
                 return {i, j, 0};
-            flag = Controller::check(state, {j, i}, lx, ly, lz);
+            flag = Controller::check(state, {i, j}, ly, lx, lz);
             if (flag)
                 return {i, j, 1};
         }

@@ -8,5 +8,5 @@
 int grid_max(std::vector<std::vector<int>> grid, int start_x, int end_x, int start_y, int end_y);
 int grid_min(std::vector<std::vector<int>> grid, int start_x, int end_x, int start_y, int end_y);
 int grid_count(std::vector<std::vector<int>> grid, int start_x, int end_x, int start_y, int end_y, int element, int tolerance);
-
+std::pair<int, int> grid_max_min(std::vector<std::vector<int>> grid, int start_x, int end_x, int start_y, int end_y);
 #endif

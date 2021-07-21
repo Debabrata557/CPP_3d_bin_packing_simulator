@@ -12,7 +12,7 @@ int main() {
     if (gb.generate_cut1()) {
         boxes = gb.get_stream_of_boxes();
     }
-    long long sum = 0;
+    double total_volume = 0;
     float total_time = 0;
     int count = 0;
     for (auto box : boxes) {
@@ -26,11 +26,11 @@ int main() {
         if (pose[0] >= 0) {
             if (pose[2] == 0) {
                 if (simulator.update_state({pose[0], pose[1]}, box[0], box[1], box[2])) {
-                    sum += box[0] * box[1] * box[2];
+                    total_volume += box[0] * box[1] * box[2];
                 }
             } else {
                 if (simulator.update_state({pose[0], pose[1]}, box[1], box[0], box[2])) {
-                    sum += box[0] * box[1] * box[2];
+                    total_volume += box[0] * box[1] * box[2];
                 }
             }
         } else {
@@ -44,5 +44,10 @@ int main() {
                   << "count: " << count++
                   << "\n";
     }
+    double efficiency = total_volume / (double)(BIN_WIDTH * BIN_HEIGHT * BIN_LENGTH);
+    std::cout << "efficiency"
+              << " " << efficiency << "\n";
+    std::cout << "total_time"
+              << " " << total_time << std::endl;
     return 0;
 }

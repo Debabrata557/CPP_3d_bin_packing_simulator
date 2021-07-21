@@ -16,14 +16,18 @@ bool Controller::check(const std::vector<std::vector<int>> &state, std::pair<int
     if (minx >= 0 && miny >= 0 && maxx <= BIN_WIDTH - 1 && maxy <= BIN_LENGTH - 1) {
         // mat=state[minx:maxx+1,miny:maxy+1]
         int max_height = grid_max(state, minx, maxx + 1, miny, maxy + 1);
-        int corner1_max = grid_max(state, minx, minx + surface + 1, miny, miny + surface + 1);
-        int corner2_max = grid_max(state, maxx - surface, maxx + 1, miny, miny + surface + 1);
-        int corner3_max = grid_max(state, minx, minx + surface + 1, maxy, maxy - surface + 1);
-        int corner4_max = grid_max(state, maxx - surface, maxx + 1, maxy - surface, maxy + 1);
-        int corner1_min = grid_min(state, minx, minx + surface + 1, miny, miny + surface + 1);
-        int corner2_min = grid_min(state, maxx - surface, maxx + 1, miny, miny + surface + 1);
-        int corner3_min = grid_min(state, minx, minx + surface + 1, maxy, maxy - surface + 1);
-        int corner4_min = grid_min(state, maxx - surface, maxx + 1, maxy - surface, maxy + 1);
+        std::pair<int, int> corner1_max_min = grid_max_min(state, minx, minx + surface + 1, miny, miny + surface + 1);
+        std::pair<int, int> corner2_max_min = grid_max_min(state, maxx - surface, maxx + 1, miny, miny + surface + 1);
+        std::pair<int, int> corner3_max_min = grid_max_min(state, minx, minx + surface + 1, maxy, maxy - surface + 1);
+        std::pair<int, int> corner4_max_min = grid_max_min(state, maxx - surface, maxx + 1, maxy - surface, maxy + 1);
+        int corner1_max = corner1_max_min.first;
+        int corner2_max = corner2_max_min.first;
+        int corner3_max = corner3_max_min.first;
+        int corner4_max = corner4_max_min.first;
+        int corner1_min = corner1_max_min.second;
+        int corner2_min = corner2_max_min.second;
+        int corner3_min = corner3_max_min.second;
+        int corner4_min = corner4_max_min.second;
 
         // corner1_mat=state[minx:minx+surface+1,miny:miny+surface+1]
         // corner2_mat=state[maxx-surface:maxx+1,miny:miny+surface+1]

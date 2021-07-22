@@ -1,5 +1,5 @@
 output: helper.o sim.o generate_box.o controller.o run.o
-	g++ helper.o sim.o generate_box.o controller.o run.o -o run
+	g++ helper.o sim.o generate_box.o controller.o run.o -o run -pthread
 
 helper.o: helper.cpp helper.h
 	g++ -c helper.cpp

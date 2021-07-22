@@ -4,6 +4,7 @@
 #include <cmath>
 #include "config.h"
 #include "helper.h"
+
 #ifndef controller
 #define controller
 class Controller {

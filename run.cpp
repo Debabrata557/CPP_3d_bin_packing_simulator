@@ -3,6 +3,7 @@
 #include "controller.h"
 #include "generate_box.h"
 #include "sim.h"
+#include <unistd.h>
 
 int main() {
     GenerateBox gb = GenerateBox();

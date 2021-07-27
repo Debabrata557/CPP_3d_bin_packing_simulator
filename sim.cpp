@@ -1,11 +1,17 @@
 #include "sim.h"
 
+#include <set>
+
 Sim::Sim(/* args */) {
     bin_state = std::vector<std::vector<int>>(BIN_WIDTH, std::vector<int>(BIN_LENGTH, 0));
+    icpbcp_list = std::vector<std::pair<vector_3d, vector_3d>>({{{0, 0, 0}, {BIN_WIDTH, BIN_LENGTH, BIN_HEIGHT}}});
 }
 Sim::~Sim() {
 }
-int Sim::update_state(std::pair<int, int> start_corner, int width, int length, int height) {
+int Sim::update_state(std::pair<int, int> start_corner, vector_3d dim) {
+    int width = dim.x;
+    int length = dim.y;
+    int height = dim.z;
     int cur_max_height = -1;
     int scaled_length = length * SCALING_FACTOR;
     int scaled_width = width * SCALING_FACTOR;
@@ -29,6 +35,74 @@ int Sim::update_state(std::pair<int, int> start_corner, int width, int length, i
 
     return 1;
 }
+
+bool Sim::is_overlapping(std::pair<vector_3d, vector_3d> icpbcp, vector_3d pos, vector_3d size) {
+    for (int i = 0; i <= 1; i++) {
+        for (int j = 0; j <= 1; j++) {
+            for (int k = 0; k <= 1; k++) {
+                int cur_x = pos.x + i * size.x;
+                int cur_y = pos.y + j * size.y;
+                int cur_z = pos.z + k * size.z;
+                if (cur_x > icpbcp.first.x && cur_x < icpbcp.second.x && cur_y > icpbcp.first.y && cur_y < icpbcp.second.y && cur_z > icpbcp.first.z && cur_z < icpbcp.second.z) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+int Sim::update_icpbcp_list(int icpbcp_idx, vector_3d dim) {
+    try {
+        vector_3d pos = icpbcp_list[icpbcp_idx].first;
+        int x_o = pos.x;
+        int y_o = pos.y;
+        int z_o = pos.z;
+
+        int w_o = dim.x;
+        int l_o = dim.y;
+        int h_o = dim.z;
+
+        std::set<std::pair<vector_3d, vector_3d>> icpbcp_st;
+        for (auto icpbcp : icpbcp_st) {
+            int x_c1 = icpbcp.first.x;
+            int y_c1 = icpbcp.first.y;
+            int z_c1 = icpbcp.first.z;
+            int x_c2 = icpbcp.second.x;
+            int y_c2 = icpbcp.second.y;
+            int z_c2 = icpbcp.second.z;
+            if (is_overlapping(icpbcp, pos, dim)) {
+                if (x_o > x_c1) {
+                    icpbcp_st.insert({{x_c1, y_c1, z_c1}, {x_o, y_c2, z_c2}});
+                }
+                if (x_o + w_o < x_c2) {
+                    icpbcp_st.insert({{x_o + w_o, y_c1, z_c1}, {x_c2, y_c2, z_c2}});
+                }
+                if (y_o > y_c1) {
+                    icpbcp_st.insert({{x_c1, y_c1, z_c1}, {x_c2, y_o, z_c2}});
+                }
+                if (y_o + l_o < y_c2) {
+                    icpbcp_st.insert({{x_c1, y_o + l_o, z_c1}, {x_c2, y_c2, z_c2}});
+                }
+                if (z_o > z_c1) {
+                    icpbcp_st.insert({{x_c1, y_c1, z_c1}, {x_c2, y_c2, z_o}});
+                }
+                if (z_o + h_o < z_c2) {
+                    icpbcp_st.insert({{x_c1, y_c1, z_o + h_o}, {x_c2, y_c2, z_c2}});
+                }
+            }
+        }
+        for (auto it : icpbcp_st) {
+            icpbcp_list.push_back(it);
+        }
+
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << '\n';
+        return 0;
+    }
+
+    return 1;
+}
 void Sim::print_state() {
     for (int i = 0; i < BIN_WIDTH; i++) {
         for (int j = 0; j < BIN_LENGTH; j++) {
@@ -39,4 +113,7 @@ void Sim::print_state() {
 }
 std::vector<std::vector<int>> Sim::get_state() {
     return bin_state;
+}
+std::vector<std::pair<vector_3d, vector_3d>> Sim::get_icbp_list() {
+    return icpbcp_list;
 }

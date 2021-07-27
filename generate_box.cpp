@@ -43,11 +43,11 @@ int GenerateBox::generate_cut1() {
             item2[axisChosen] = invalidItem[axisChosen] - item1[axisChosen];
             item2[3 + axisChosen] = item2[3 + axisChosen] + item1[axisChosen];
             if (is_valid_item(item1))
-                stream_of_boxes.push_back(item1);
+                stream_of_boxes.push_back({item1[0], item1[1], item1[2]});
             else
                 invalid.push_back(item1);
             if (is_valid_item(item2))
-                stream_of_boxes.push_back(item2);
+                stream_of_boxes.push_back({item2[0], item2[1], item2[2]});
             else
                 invalid.push_back(item2);
         }
@@ -61,6 +61,6 @@ int GenerateBox::generate_cut1() {
 
 void GenerateBox::generate_cut2() {
 }
-std::vector<std::vector<int>> GenerateBox::get_stream_of_boxes() {
+std::vector<vector_3d> GenerateBox::get_stream_of_boxes() {
     return stream_of_boxes;
 }

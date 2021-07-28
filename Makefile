@@ -1,29 +1,29 @@
 output: base.o first_fit.o first_fit_icp.o config.o helper.o sim.o generate_box.o run.o
-	g++ base.o first_fit.o first_fit_icp.o config.o helper.o sim.o generate_box.o run.o -o run -pthread
+	g++ -g base.o first_fit.o first_fit_icp.o config.o helper.o sim.o generate_box.o run.o -o run 
 
 first_fit.o: first_fit.cpp
-	g++ -c first_fit.cpp
+	g++ -c -g first_fit.cpp
 
 first_fit_icp.o: first_fit_icp.cpp
-	g++ -c first_fit_icp.cpp
+	g++ -c -g first_fit_icp.cpp
 
 base.o: base.cpp
-	g++ -c base.cpp
+	g++ -c -g base.cpp
 	
 config.o: config.cpp config.h
-	g++ -c config.cpp
+	g++ -c -g config.cpp
 
 helper.o: helper.cpp helper.h
-	g++ -c helper.cpp
+	g++ -c -g helper.cpp
 
 sim.o: sim.cpp sim.h
-	g++ -c sim.cpp
+	g++ -c -g sim.cpp
 
 generate_box.o: generate_box.cpp generate_box.h
-	g++ -c generate_box.cpp
+	g++ -c -g generate_box.cpp
 
 run.o: run.cpp sim.h generate_box.h
-	g++ -c run.cpp
+	g++ -c -g run.cpp
 
 clean:
 	rm *.o run *.gch

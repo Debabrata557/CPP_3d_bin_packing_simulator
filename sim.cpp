@@ -62,9 +62,10 @@ int Sim::update_icpbcp_list(int icpbcp_idx, vector_3d dim) {
         int w_o = dim.x;
         int l_o = dim.y;
         int h_o = dim.z;
-
         std::set<std::pair<vector_3d, vector_3d>> icpbcp_st;
-        for (auto icpbcp : icpbcp_st) {
+        std::vector<std::pair<vector_3d, vector_3d>> temp_icpbcp_list;
+
+        for (auto icpbcp : icpbcp_list) {
             int x_c1 = icpbcp.first.x;
             int y_c1 = icpbcp.first.y;
             int z_c1 = icpbcp.first.z;
@@ -90,8 +91,12 @@ int Sim::update_icpbcp_list(int icpbcp_idx, vector_3d dim) {
                 if (z_o + h_o < z_c2) {
                     icpbcp_st.insert({{x_c1, y_c1, z_o + h_o}, {x_c2, y_c2, z_c2}});
                 }
+            } else {
+                temp_icpbcp_list.push_back(icpbcp);
             }
         }
+        icpbcp_list.clear();
+        icpbcp_list = temp_icpbcp_list;
         for (auto it : icpbcp_st) {
             icpbcp_list.push_back(it);
         }

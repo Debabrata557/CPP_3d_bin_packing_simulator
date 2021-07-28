@@ -66,7 +66,7 @@ class Base {
     }
     ~Base() {
     }
-    virtual void execute() = 0;
+    virtual int execute() = 0;
 
     bool check(const std::vector<std::vector<int>> &state, std::pair<int, int> pos, vector_3d dim) {
         int lx = dim.x;

@@ -22,7 +22,7 @@ class First_Fit : public Base {
     }
 
    public:
-    void execute() {
+    int execute() {
         double total_volume = 0;
         int count = 0;
         for (auto box : boxes) {
@@ -33,10 +33,16 @@ class First_Fit : public Base {
                 if (pose[2] == 0) {
                     if (simulator.update_state({pose[0], pose[1]}, box)) {
                         total_volume += box.x * box.y * box.z;
+                    } else {
+                        std::cout << "exception occured" << std::endl;
+                        return 0;
                     }
                 } else {
                     if (simulator.update_state({pose[0], pose[1]}, {box.y, box.x, box.z})) {
                         total_volume += box.x * box.y * box.z;
+                    } else {
+                        std::cout << "exception occured" << std::endl;
+                        return 0;
                     }
                 }
             } else {
@@ -53,5 +59,6 @@ class First_Fit : public Base {
         double efficiency = total_volume / (double)(BIN_WIDTH * BIN_HEIGHT * BIN_LENGTH);
         std::cout << "efficiency"
                   << " " << efficiency << "\n";
+        return 1;
     }
 };

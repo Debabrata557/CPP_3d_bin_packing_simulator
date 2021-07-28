@@ -36,7 +36,7 @@ public:
         pre_computed_max = std::vector<std::vector<std::vector<std::vector<int>>>>(BIN_WIDTH + 1, std::vector<std::vector<std::vector<int>>>(BIN_LENGTH + 1, std::vector<std::vector<int>>(10, std::vector<int>(10))));
         pre_computed_min = std::vector<std::vector<std::vector<std::vector<int>>>>(BIN_WIDTH + 1, std::vector<std::vector<std::vector<int>>>(BIN_LENGTH + 1, std::vector<std::vector<int>>(10, std::vector<int>(10))));
     }
-    int execute()
+    double execute()
     {
         double total_volume = 0;
         int count = 0;
@@ -56,7 +56,7 @@ public:
                     else
                     {
                         std::cout << "exception occured" << std::endl;
-                        return 0;
+                        return -1;
                     }
                 }
                 else
@@ -68,7 +68,7 @@ public:
                     else
                     {
                         std::cout << "exception occured" << std::endl;
-                        return 0;
+                        return -1;
                     }
                 }
             }
@@ -85,8 +85,6 @@ public:
             //           << "\n";
         }
         double efficiency = total_volume / (double)(BIN_WIDTH * BIN_HEIGHT * BIN_LENGTH);
-        std::cout << "efficiency"
-                  << " " << efficiency << "\n";
-        return 1;
+        return efficiency;
     }
 };

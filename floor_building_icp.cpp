@@ -28,7 +28,7 @@ public:
     Floor_Building_Icp(GenerateBox gb, Sim simulator) : Base(gb, simulator)
     {
     }
-    int execute()
+    double execute()
     {
         double total_volume = 0;
         int count = 0;
@@ -50,7 +50,7 @@ public:
                     else
                     {
                         std::cout << "exception occured" << std::endl;
-                        return 0;
+                        return -1;
                     }
                 }
                 else
@@ -62,7 +62,7 @@ public:
                     else
                     {
                         std::cout << "exception occured" << std::endl;
-                        return 0;
+                        return -1;
                     }
                 }
                 //std::cout << "icpbcp_size " << icpbcp_list.size() << "\n";
@@ -80,8 +80,6 @@ public:
             //           << "\n";
         }
         double efficiency = total_volume / (double)(BIN_WIDTH * BIN_HEIGHT * BIN_LENGTH);
-        // std::cout << "efficiency"
-        //           << " " << efficiency << "\n";
-        return 1;
+        return efficiency;
     }
 };

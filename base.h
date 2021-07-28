@@ -35,7 +35,7 @@ public:
     Base(/* args */);
     Base(GenerateBox gb, Sim simulator);
     ~Base();
-    virtual int execute() = 0;
+    virtual double execute() = 0;
     bool check_with_precomputation(const std::vector<std::vector<int>> &state, std::pair<int, int> pos, vector_3d dim);
     bool check_without_precomputation(const std::vector<std::vector<int>> &state, std::pair<int, int> pos, vector_3d dim);
 };

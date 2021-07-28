@@ -1,29 +1,26 @@
 //#include "first_fit.cpp"
 //#include "first_fit_icp.cpp"
-#include "floor_building.cpp"
+// #include "floor_building.cpp"
 
-void *worker()
-{
+#include "floor_building_icp.cpp"
+
+void *worker() {
     //Base *x = new First_Fit();
     //Base *x = new First_Fit_Icp();
-    Base *x = new Floor_Building();
+    Base *x = new Floor_building_Icp();
     x->execute();
     delete (x);
     return 0;
 }
-int main()
-{
+int main() {
     int episode = 100;
     std::thread threadHandles[episode];
     clock_t start_time = clock();
-    for (int k = 0; k < 1; k++)
-    {
-        for (int i = 0; i < episode; i++)
-        {
+    for (int k = 0; k < 1; k++) {
+        for (int i = 0; i < episode; i++) {
             threadHandles[i] = std::thread(worker);
         }
-        for (long long i = 0; i < episode; i++)
-        {
+        for (long long i = 0; i < episode; i++) {
             threadHandles[i].join();
         }
     }

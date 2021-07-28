@@ -13,12 +13,5 @@
 // };
 
 bool operator<(const vector_3d& a, const vector_3d& b) {
-    //return std::tie(a.x, a.y, a.z) < std::tie(b.x, b.y, b.z);
-    if (a.x < b.x) {
-        return true;
-    }
-    if (a.y < b.y) {
-        return true;
-    }
-    return a.z < b.z;
+    return std::tie(a.z, a.x, a.y) < std::tie(a.z, b.x, b.y);
 }

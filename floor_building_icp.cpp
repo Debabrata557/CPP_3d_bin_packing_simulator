@@ -1,9 +1,12 @@
+#include <algorithm>
+
 #include "base.cpp"
 
-class First_Fit_Icp : public Base {
+class Floor_building_Icp : public Base {
    private:
     std::pair<int, int> get_action(std::vector<std::pair<vector_3d, vector_3d>> &icpbcp_list, std::vector<std::vector<int>> &state, vector_3d &dim) {
         int lx = dim.x, ly = dim.y, lz = dim.z;
+        std::sort(icpbcp_list.begin(), icpbcp_list.end());
         for (int i = 0; i < icpbcp_list.size(); i++) {
             if (check_without_precomputation(state, {icpbcp_list[i].first.x, icpbcp_list[i].first.y}, dim)) {
                 return {i, 0};

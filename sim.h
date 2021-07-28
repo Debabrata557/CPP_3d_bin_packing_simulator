@@ -8,13 +8,14 @@
 
 // std::vector<std::vector<int>> bin_state(120, std::vector<int>(180, 0));
 
-class Sim {
-   private:
+class Sim
+{
+private:
     std::vector<std::vector<int>> bin_state;
     std::vector<std::pair<vector_3d, vector_3d>> icpbcp_list;
     bool is_overlapping(std::pair<vector_3d, vector_3d> icpbcp, vector_3d size, vector_3d pos);
 
-   public:
+public:
     Sim(/* args */);
     ~Sim();
     int update_state(std::pair<int, int> start_corner, vector_3d dim);

@@ -8,19 +8,20 @@
 #ifndef generate_box
 #define generate_box
 
-class GenerateBox {
-   private:
+class GenerateBox
+{
+private:
     std::vector<int> max_size, min_size;
     std::vector<vector_3d> stream_of_boxes;
     // int scaled_max_box_length, scaled_max_box_width, scaled_max_box_height;
     // int scaled_min_box_length, scaled_min_box_width, scaled_min_box_height;
 
     /* data */
-   public:
+public:
     GenerateBox(/* args */);
     ~GenerateBox();
 
-    bool is_valid_item(std::vector<int>& item);
+    bool is_valid_item(std::vector<int> &item);
     int generate_cut1();
     void generate_cut2();
     std::vector<vector_3d> get_stream_of_boxes();

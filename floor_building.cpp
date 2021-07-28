@@ -1,4 +1,4 @@
-#include "base.cpp"
+#include "base.h"
 
 class Floor_Building : public Base
 {

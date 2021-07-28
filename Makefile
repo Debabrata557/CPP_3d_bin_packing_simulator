@@ -1,5 +1,5 @@
 output: base.o first_fit.o first_fit_icp.o config.o helper.o sim.o generate_box.o run.o
-	g++ -g base.o first_fit.o first_fit_icp.o config.o helper.o sim.o generate_box.o run.o -o run 
+	g++ -g base.o first_fit.o first_fit_icp.o config.o helper.o sim.o generate_box.o run.o -o run -pthread
 
 first_fit.o: first_fit.cpp
 	g++ -c -g first_fit.cpp

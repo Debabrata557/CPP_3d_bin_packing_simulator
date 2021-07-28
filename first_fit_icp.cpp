@@ -24,7 +24,7 @@ class First_Fit_Icp : public Base {
             std::vector<std::pair<vector_3d, vector_3d>> icpbcp_list = simulator.get_icbp_list();
             precompute_max_min(cur_state);
             auto idx_ori = get_action(icpbcp_list, cur_state, box);
-            std::cout << idx_ori.first << "\n";
+            // std::cout << idx_ori.first << "\n";
             if (idx_ori.first >= 0) {
                 if (idx_ori.second == 0) {
                     if (simulator.update_icpbcp_list(idx_ori.first, box) && simulator.update_state({icpbcp_list[idx_ori.first].first.x, icpbcp_list[idx_ori.first].first.y}, box)) {
@@ -41,7 +41,7 @@ class First_Fit_Icp : public Base {
                         return 0;
                     }
                 }
-                std::cout << "icpbcp_size " << icpbcp_list.size() << "\n";
+                //std::cout << "icpbcp_size " << icpbcp_list.size() << "\n";
             } else {
                 std::cout << "could not place the box" << std::endl;
             }

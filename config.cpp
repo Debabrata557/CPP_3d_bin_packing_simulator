@@ -12,6 +12,7 @@
 //     // }
 // };
 
-bool operator<(const vector_3d& a, const vector_3d& b) {
+bool operator<(const vector_3d &a, const vector_3d &b)
+{
     return std::tie(a.z, a.x, a.y) < std::tie(a.z, b.x, b.y);
 }

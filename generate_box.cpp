@@ -2,12 +2,15 @@
 
 GenerateBox::GenerateBox()
 {
-    if (DEBUG)
-        srand(0);
-    else
-        srand(time(0));
+}
+GenerateBox::GenerateBox(int seed, std::string algorithm)
+{
+    generator = std::mt19937(seed);
+    cpp_rand = std::uniform_int_distribution<int>(0, 1000);
     max_size = {MAX_BOX_WIDTH, MAX_BOX_LENGTH, MAX_BOX_HEIGHT};
     min_size = {MIN_BOX_WIDTH, MIN_BOX_LENGTH, MIN_BOX_HEIGHT};
+    if (algorithm == "cut1")
+        generate_cut1();
     // scaled_max_box_length = MAX_BOX_LENGTH * SCALING_FACTOR;
     // scaled_max_box_height = MAX_BOX_HEIGHT * SCALING_FACTOR;
     // scaled_max_box_width = MAX_BOX_WIDTH * SCALING_FACTOR;
@@ -36,7 +39,8 @@ int GenerateBox::generate_cut1()
         invalid.push_back(std::vector<int>({BIN_WIDTH, BIN_LENGTH, BIN_HEIGHT, 0, 0, 0}));
         while (invalid.size() > 0)
         {
-            int invalidItemIndex = rand() % invalid.size();
+            // int invalidItemIndex = rand() % invalid.size();
+            int invalidItemIndex = cpp_rand(generator) % invalid.size();
             std::vector<int> invalidItem = invalid[invalidItemIndex];
             invalid.erase(invalid.begin() + invalidItemIndex);
             std::vector<int> axis;
@@ -46,8 +50,10 @@ int GenerateBox::generate_cut1()
                 axis.push_back(1);
             if (invalidItem[2] > max_size[2])
                 axis.push_back(2);
-            int axisChosen = axis[rand() % axis.size()];
-            int cutLen = rand() % (invalidItem[axisChosen] - 2 * min_size[axisChosen]);
+            //int axisChosen = axis[rand() % axis.size()];
+            int axisChosen = axis[cpp_rand(generator) % axis.size()];
+            // int cutLen = rand() % (invalidItem[axisChosen] - 2 * min_size[axisChosen]);
+            int cutLen = cpp_rand(generator) % (invalidItem[axisChosen] - 2 * min_size[axisChosen]);
             std::vector<int> item1 = {invalidItem[0], invalidItem[1], invalidItem[2], invalidItem[3], invalidItem[4], invalidItem[5]};
             std::vector<int> item2 = {invalidItem[0], invalidItem[1], invalidItem[2], invalidItem[3], invalidItem[4], invalidItem[5]};
             item1[axisChosen] = min_size[axisChosen] + cutLen;

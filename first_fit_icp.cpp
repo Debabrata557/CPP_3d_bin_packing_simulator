@@ -21,6 +21,12 @@ private:
     }
 
 public:
+    First_Fit_Icp()
+    {
+    }
+    First_Fit_Icp(GenerateBox gb, Sim simulator) : Base(gb, simulator)
+    {
+    }
     int execute()
     {
         double total_volume = 0;

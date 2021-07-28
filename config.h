@@ -1,8 +1,8 @@
+#include <tuple>
+#include <random>
 
 #ifndef config
 #define config
-#include <tuple>
-
 const int DEBUG = 0;
 const int BIN_WIDTH = 120;
 const int BIN_HEIGHT = 120;

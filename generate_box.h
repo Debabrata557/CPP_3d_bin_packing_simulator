@@ -2,7 +2,6 @@
 #include <cstdlib>
 #include <iostream>
 #include <vector>
-
 #include "config.h"
 
 #ifndef generate_box
@@ -13,12 +12,15 @@ class GenerateBox
 private:
     std::vector<int> max_size, min_size;
     std::vector<vector_3d> stream_of_boxes;
+    std::mt19937 generator;
+    std::uniform_int_distribution<int> cpp_rand;
     // int scaled_max_box_length, scaled_max_box_width, scaled_max_box_height;
     // int scaled_min_box_length, scaled_min_box_width, scaled_min_box_height;
 
     /* data */
 public:
     GenerateBox(/* args */);
+    GenerateBox(int seed, std::string algorithm);
     ~GenerateBox();
 
     bool is_valid_item(std::vector<int> &item);

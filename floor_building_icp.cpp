@@ -1,6 +1,6 @@
 #include "base.h"
 
-class Floor_building_Icp : public Base
+class Floor_Building_Icp : public Base
 {
 private:
     std::pair<int, int> get_action(std::vector<std::pair<vector_3d, vector_3d>> &icpbcp_list, std::vector<std::vector<int>> &state, vector_3d &dim)
@@ -22,6 +22,12 @@ private:
     }
 
 public:
+    Floor_Building_Icp()
+    {
+    }
+    Floor_Building_Icp(GenerateBox gb, Sim simulator) : Base(gb, simulator)
+    {
+    }
     int execute()
     {
         double total_volume = 0;
@@ -74,8 +80,8 @@ public:
             //           << "\n";
         }
         double efficiency = total_volume / (double)(BIN_WIDTH * BIN_HEIGHT * BIN_LENGTH);
-        std::cout << "efficiency"
-                  << " " << efficiency << "\n";
+        // std::cout << "efficiency"
+        //           << " " << efficiency << "\n";
         return 1;
     }
 };

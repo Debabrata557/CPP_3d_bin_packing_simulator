@@ -71,6 +71,7 @@ protected:
 public:
     Base()
     {
+        int debug = 0;
         gb = GenerateBox();
         simulator = Sim();
         if (gb.generate_cut1())

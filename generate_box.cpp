@@ -1,7 +1,11 @@
 #include "generate_box.h"
 
-GenerateBox::GenerateBox(/* args */)
+GenerateBox::GenerateBox()
 {
+    if (DEBUG)
+        srand(0);
+    else
+        srand(time(0));
     max_size = {MAX_BOX_WIDTH, MAX_BOX_LENGTH, MAX_BOX_HEIGHT};
     min_size = {MIN_BOX_WIDTH, MIN_BOX_LENGTH, MIN_BOX_HEIGHT};
     // scaled_max_box_length = MAX_BOX_LENGTH * SCALING_FACTOR;

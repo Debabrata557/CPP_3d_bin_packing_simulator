@@ -9,6 +9,9 @@ Bin::Bin(/* args */) {
 }
 Bin::~Bin() {
 }
+bool Bin::is_open() {
+    return open;
+}
 int Bin::update_state(std::pair<int, int> start_corner, vector_3d dim) {
     int width = dim.x;
     int length = dim.y;

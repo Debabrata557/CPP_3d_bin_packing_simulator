@@ -38,9 +38,9 @@ void Base::precompute_max_min(const std::vector<std::vector<int>> &state) {
 }
 Base::Base() {
 }
-Base::Base(GenerateBox gb, Bin bin_instance) {
+Base::Base(GenerateBox gb, std::vector<Bin> bin_instances) {
     this->gb = gb;
-    this->bin_instance = bin_instance;
+    this->bin_instances = bin_instances;
     boxes = gb.get_stream_of_boxes();
 }
 Base::~Base() {

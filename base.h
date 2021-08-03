@@ -21,7 +21,7 @@
 class Base {
    protected:
     GenerateBox gb;
-    Bin bin_instance;
+    std::vector<Bin> bin_instances;
     std::vector<vector_3d> boxes;
     std::vector<std::vector<std::vector<std::vector<int>>>> pre_computed_max;
     std::vector<std::vector<std::vector<std::vector<int>>>> pre_computed_min;
@@ -30,9 +30,9 @@ class Base {
 
    public:
     Base(/* args */);
-    Base(GenerateBox gb, Bin bin_instance);
+    Base(GenerateBox gb, std::vector<Bin> bin_instances);
     ~Base();
-    virtual double execute() = 0;
+    virtual performance_metric execute(int max_bin_limit) = 0;
     bool check_with_precomputation(const std::vector<std::vector<int>> &state, std::pair<int, int> pos, vector_3d dim);
     bool check_without_precomputation(const std::vector<std::vector<int>> &state, std::pair<int, int> pos, vector_3d dim);
 };

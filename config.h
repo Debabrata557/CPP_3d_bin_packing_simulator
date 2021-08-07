@@ -13,7 +13,7 @@ const int MAX_BOX_HEIGHT = 60;
 const int MIN_BOX_LENGTH = 30;
 const int MIN_BOX_WIDTH = 30;
 const int MIN_BOX_HEIGHT = 30;
-const int CONTROLLER_TOLERANCE = 0;
+const int CONTROLLER_TOLERANCE = 3;
 
 const int SCALING_FACTOR = 1;  // effective bin_width/height/length = bin_width/height/length *(1/scaling_factor)..Make sure the effective bin_width/height/length are integers
 

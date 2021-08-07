@@ -39,6 +39,8 @@ class First_Fit : public Base {
             if (pose[2] == 0) {
                 if (bin_instance.update_state({pose[0], pose[1]}, box)) {
                     total_volume += box.x * box.y * box.z;
+                    bin_instance.volume += box.x * box.y * box.z;
+                    bin_instance.no_of_boxes_placed++;
                     return 1;
                 } else {
                     std::cout << "exception occured" << std::endl;
@@ -47,6 +49,8 @@ class First_Fit : public Base {
             } else {
                 if (bin_instance.update_state({pose[0], pose[1]}, {box.y, box.x, box.z})) {
                     total_volume += box.x * box.y * box.z;
+                    bin_instance.volume += box.x * box.y * box.z;
+                    bin_instance.no_of_boxes_placed++;
                     return 1;
                 } else {
                     std::cout << "exception occured" << std::endl;
@@ -58,11 +62,13 @@ class First_Fit : public Base {
         }
         return 0;
     }
-    performance_metric execute(int max_bin_limit) {
+    performance_metric execute(int max_bin_limit, int max_open_bins) {
         double total_volume = 0;
         double no_of_bins_used = 0;
         double no_of_boxes_put = 0;
         performance_metric pm;
+        int to_be_closed = 0;
+        int cur_open = 0;
         for (auto box : boxes) {
             // std::cout << box.x << " " << box.y << " " << box.z << "\n";
             int flag = 0;
@@ -82,8 +88,18 @@ class First_Fit : public Base {
                 }
                 bin_instances.push_back(new_bin);
                 no_of_bins_used++;
+                cur_open++;
+                if (cur_open > max_open_bins) {
+                    bin_instances[to_be_closed].open = false;
+                    to_be_closed++;
+                    cur_open--;
+                }
             }
         }
+
+        // for (int i = 1; i <= bin_instances.size(); i++) {
+        //     std::cout << i << " " << bin_instances[i - 1].no_of_boxes_placed << " " << bin_instances[i - 1].volume / (BIN_WIDTH * BIN_HEIGHT * BIN_LENGTH) << "\n";
+        // }
 
         double efficiency = total_volume / (double)(no_of_bins_used * BIN_WIDTH * BIN_HEIGHT * BIN_LENGTH);
         pm.efficiency = efficiency;

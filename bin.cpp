@@ -6,6 +6,8 @@ Bin::Bin(/* args */) {
     bin_state = std::vector<std::vector<int>>(BIN_WIDTH, std::vector<int>(BIN_LENGTH, 0));
     icpbcp_list = std::vector<std::pair<vector_3d, vector_3d>>({{{0, 0, 0}, {BIN_WIDTH, BIN_LENGTH, BIN_HEIGHT}}});
     open = true;
+    volume = 0;
+    no_of_boxes_placed = 0;
 }
 Bin::~Bin() {
 }
@@ -57,7 +59,7 @@ bool Bin::is_overlapping(std::pair<vector_3d, vector_3d> icpbcp, vector_3d pos, 
 }
 
 void Bin::set_open() {
-    std::vector<std::pair<vector_3d, vector_3d>> temp_icpbcp_list;
+    // std::vector<std::pair<vector_3d, vector_3d>> temp_icpbcp_list;
     bool flag = false;
     for (auto icp_bcp : icpbcp_list) {
         int x_diff = icp_bcp.second.x - icp_bcp.first.x;
@@ -66,11 +68,11 @@ void Bin::set_open() {
 
         if (x_diff >= MIN_BOX_WIDTH && y_diff >= MIN_BOX_LENGTH && z_diff >= MIN_BOX_HEIGHT) {
             flag = true;
-            temp_icpbcp_list.push_back(icp_bcp);
+            // temp_icpbcp_list.push_back(icp_bcp);
         }
     }
-    icpbcp_list.clear();
-    icpbcp_list = temp_icpbcp_list;
+    // icpbcp_list.clear();
+    // icpbcp_list = temp_icpbcp_list;
     open = flag;
 }
 
@@ -124,7 +126,7 @@ int Bin::update_icpbcp_list(int icpbcp_idx, vector_3d dim) {
             icpbcp_list.push_back(it);
         }
 
-        set_open();
+        // Bin::set_open();
 
     } catch (const std::exception &e) {
         std::cerr << e.what() << '\n';

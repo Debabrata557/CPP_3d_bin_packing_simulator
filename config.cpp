@@ -1,18 +1,19 @@
 #include "config.h"
 
-// struct vector_3d {
-//     int x, y, z;
-//     // vector_3d() {
-//     //     x = 0, y = 0, z = 0;
-//     // }
-//     // vector_3d(int x, int y, int z) {
-//     //     this->x = x;
-//     //     this->y = y;
-//     //     this->z = z;
-//     // }
-// };
+bool operator<(const vector_3d& a, const vector_3d& b) {
+    if (a.x != b.x) {
+        return a.x < b.x;
+    } else {
+        if (a.y != b.y) {
+            return a.y < b.y;
+        } else {
+            return a.z < b.z;
+        }
+    }
+}
 
-bool operator<(const vector_3d &a, const vector_3d &b)
-{
-    return std::tie(a.z, a.x, a.y) < std::tie(a.z, b.x, b.y);
+bool comp_floor_building(std::pair<vector_3d, vector_3d>& a, std::pair<vector_3d, vector_3d>& b) {
+    std::pair<vector_3d, vector_3d> temp_a = {{a.first.z, a.first.x, a.first.y}, {a.second.z, a.second.x, a.second.y}};
+    std::pair<vector_3d, vector_3d> temp_b = {{b.first.z, b.first.x, b.first.y}, {b.second.z, b.second.x, b.second.y}};
+    return temp_a < temp_b;
 }

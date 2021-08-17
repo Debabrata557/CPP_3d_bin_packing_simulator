@@ -9,10 +9,24 @@ class Floor_Building_Icp : public Base {
         // std::cout << "after sort" << icpbcp_list.size() << "\n";
         for (int i = 0; i < icpbcp_list.size(); i++) {
             if (check_without_precomputation(state, {icpbcp_list[i].first.x, icpbcp_list[i].first.y}, dim)) {
-                return {i, 0};
+                auto icp_bcp = icpbcp_list[i];
+                int x_diff = icp_bcp.second.x - icp_bcp.first.x;
+                int y_diff = icp_bcp.second.y - icp_bcp.first.y;
+                int z_diff = icp_bcp.second.z - icp_bcp.first.z;
+
+                if ((x_diff >= lx && y_diff >= ly && z_diff >= lz)) {
+                    return {i, 0};
+                }
             }
             if (check_without_precomputation(state, {icpbcp_list[i].first.x, icpbcp_list[i].first.y}, {dim.y, dim.x, dim.z})) {
-                return {i, 1};
+                auto icp_bcp = icpbcp_list[i];
+                int x_diff = icp_bcp.second.x - icp_bcp.first.x;
+                int y_diff = icp_bcp.second.y - icp_bcp.first.y;
+                int z_diff = icp_bcp.second.z - icp_bcp.first.z;
+
+                if ((x_diff >= ly && y_diff >= lx && z_diff >= lz)) {
+                    return {i, 1};
+                }
             }
         }
         return {-1, 0};

@@ -9,15 +9,18 @@
 #include "generate_box.h"
 
 performance_metric worker(int seed) {
-    GenerateBox gb = GenerateBox(seed, "random", 2000);
+    GenerateBox gb = GenerateBox(seed, "random", 200);
     std::vector<vector_3d> boxes = gb.get_stream_of_boxes();
+
+    // std::cout << boxes.size() << "\n";
     std::vector<Bin> bin_instances;
-    int bin_limit = 1000;
+    int bin_limit = 200;
+    int max_open_bin = 1;
     // Base *x = new First_Fit(gb, bin_instances);
     Base *x = new First_Fit_Icp(gb, bin_instances);
     // Base *x = new Floor_Building_Icp(gb, bin_instances);
     // Base *x = new Floor_Building(gb, bin_instances);
-    performance_metric pm = x->execute(bin_limit, 3);
+    performance_metric pm = x->execute(bin_limit, max_open_bin);
     // std::cout << bin_instances.size() << "\n";
     // for (int i = 1; i <= bin_instances.size(); i++) {
     //     std::cout << i << " " << bin_instances[i - 1].no_of_boxes_placed << " " << bin_instances[i - 1].volume << "\n";
@@ -28,19 +31,19 @@ performance_metric worker(int seed) {
     return pm;
 }
 int main() {
-    int episode = 56;
-
+    int episode = 1;
+    int seed = 0;
     //std::thread threadHandles[episode];
     clock_t start_time = clock();
     double efficiency = 0;
     double no_of_bins = 0;
     double total_boxes = 0;
     double boxes_put = 0;
-    int num_threads = 8;
+    int num_threads = 1;
     for (int k = 0; k < episode / num_threads; k++) {
         std::vector<std::future<performance_metric>> threadHandles(num_threads);
         for (int i = 0; i < num_threads; i++) {
-            threadHandles[i] = std::async(worker, i);
+            threadHandles[i] = std::async(worker, seed++);
             //threadHandles[i] = std::thread(worker, i);
         }
 
@@ -52,7 +55,7 @@ int main() {
             boxes_put += pm.number_of_boxes_successfully_put;
             //threadHandles[i].join();
         }
-        std::cout << k << "\n";
+        // std::cout << k << "\n";
     }
     std::cout << "avg efficiency"
               << " " << efficiency / episode << " ";
@@ -64,7 +67,7 @@ int main() {
               << " " << boxes_put / episode << "\n";
     clock_t end_time = clock();
     float time_passed = float(end_time - start_time) / (float)CLOCKS_PER_SEC;
-    std::cout << time_passed / 4.0 << "\n";
+    std::cout << time_passed / 8.0 << "\n";
     return 0;
     // Base* x = new First_Fit_Icp();
     // x->execute();

@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include "base.h"
 
 class First_Fit_Icp : public Base {
@@ -6,10 +8,24 @@ class First_Fit_Icp : public Base {
         int lx = dim.x, ly = dim.y, lz = dim.z;
         for (int i = 0; i < icpbcp_list.size(); i++) {
             if (check_without_precomputation(state, {icpbcp_list[i].first.x, icpbcp_list[i].first.y}, dim)) {
-                return {i, 0};
+                auto icp_bcp = icpbcp_list[i];
+                int x_diff = icp_bcp.second.x - icp_bcp.first.x;
+                int y_diff = icp_bcp.second.y - icp_bcp.first.y;
+                int z_diff = icp_bcp.second.z - icp_bcp.first.z;
+
+                if ((x_diff >= lx && y_diff >= ly && z_diff >= lz)) {
+                    return {i, 0};
+                }
             }
             if (check_without_precomputation(state, {icpbcp_list[i].first.x, icpbcp_list[i].first.y}, {dim.y, dim.x, dim.z})) {
-                return {i, 1};
+                auto icp_bcp = icpbcp_list[i];
+                int x_diff = icp_bcp.second.x - icp_bcp.first.x;
+                int y_diff = icp_bcp.second.y - icp_bcp.first.y;
+                int z_diff = icp_bcp.second.z - icp_bcp.first.z;
+
+                if ((x_diff >= ly && y_diff >= lx && z_diff >= lz)) {
+                    return {i, 1};
+                }
             }
         }
         return {-1, 0};
@@ -55,6 +71,16 @@ class First_Fit_Icp : public Base {
         }
         return 0;
     }
+
+    int evaluate(std::vector<Bin> &bin_instances) {
+        int maximum = 0;
+        for (Bin b : bin_instances) {
+            if (b.is_open())
+                maximum = std::max(maximum, grid_max(b.get_state(), 0, BIN_WIDTH, 0, BIN_LENGTH));
+        }
+        return maximum;
+    }
+
     performance_metric execute(int max_bin_limit, int max_open_bins) {
         double total_volume = 0;
         double no_of_bins_used = 0;
@@ -62,8 +88,71 @@ class First_Fit_Icp : public Base {
         performance_metric pm;
         int to_be_closed = 0;
         int cur_open = 0;
-        for (auto box : boxes) {
-            // std::cout << box.x << " " << box.y << " " << box.z << "\n";
+        // for (auto box : boxes) {
+        //     // std::cout << box.x << " " << box.y << " " << box.z << "\n";
+        //     int flag = 0;
+        //     for (int i = 0; i < bin_instances.size(); i++) {
+        //         if (bin_instances[i].is_open()) {
+        //             if (put_box(bin_instances[i], box, total_volume)) {
+        //                 flag = 1;
+        //                 no_of_boxes_put++;
+        //                 break;
+        //             }
+        //         }
+        //     }
+        //     if (!flag && no_of_bins_used < max_bin_limit) {
+        //         Bin new_bin = Bin();
+        //         if (put_box(new_bin, box, total_volume)) {
+        //             no_of_boxes_put++;
+        //         }
+        //         bin_instances.push_back(new_bin);
+        //         no_of_bins_used++;
+        //         cur_open++;
+        //         if (cur_open > max_open_bins) {
+        //             bin_instances[to_be_closed].open = false;
+        //             to_be_closed++;
+        //             cur_open--;
+        //         }
+        //     }
+        // }
+
+        // int cur_box = 0;
+        int lookahead = 4;
+        pm.total_number_of_boxes = boxes.size();
+
+        while (boxes.size() > 0) {
+            // std::vector<vector_3d> temp_boxes;
+            std::vector<int> box_idx;
+            for (int i = 0; i < lookahead && i < boxes.size(); i++) {
+                box_idx.push_back((int)boxes.size() - i - 1);
+                // temp_boxes.push_back(boxes.back());
+                // boxes.pop_back();
+            }
+            std::sort(box_idx.begin(), box_idx.end());
+            int box_to_be_placed = box_idx[0];
+            int score = INT_MAX;
+            do {
+                auto temp_bin_instances = bin_instances;
+                for (int idx : box_idx) {
+                    auto box = boxes[idx];
+                    for (int i = 0; i < temp_bin_instances.size(); i++) {
+                        if (temp_bin_instances[i].is_open()) {
+                            double temp = 0;
+                            if (put_box(temp_bin_instances[i], box, temp)) {
+                                break;
+                            }
+                        }
+                    }
+                }
+                int cur_score = evaluate(temp_bin_instances);
+                // std::cout << cur_score << "\n";
+                if (cur_score < score) {
+                    score = cur_score;
+                    box_to_be_placed = box_idx[0];
+                }
+            } while (std::next_permutation(box_idx.begin(), box_idx.end()));
+
+            auto box = boxes[box_to_be_placed];
             int flag = 0;
             for (int i = 0; i < bin_instances.size(); i++) {
                 if (bin_instances[i].is_open()) {
@@ -76,9 +165,6 @@ class First_Fit_Icp : public Base {
             }
             if (!flag && no_of_bins_used < max_bin_limit) {
                 Bin new_bin = Bin();
-                if (put_box(new_bin, box, total_volume)) {
-                    no_of_boxes_put++;
-                }
                 bin_instances.push_back(new_bin);
                 no_of_bins_used++;
                 cur_open++;
@@ -87,18 +173,20 @@ class First_Fit_Icp : public Base {
                     to_be_closed++;
                     cur_open--;
                 }
+                continue;
             }
+            boxes.erase(boxes.begin() + box_to_be_placed);
         }
 
         // for (int i = 1; i <= bin_instances.size(); i++) {
         //     std::cout << i << " " << bin_instances[i - 1].no_of_boxes_placed << " " << bin_instances[i - 1].volume / (BIN_WIDTH * BIN_HEIGHT * BIN_LENGTH) << "\n";
         // }
-
+        // std::cout << no_of_bins_used << "\n";
         double efficiency = total_volume / (double)(no_of_bins_used * BIN_WIDTH * BIN_HEIGHT * BIN_LENGTH);
         pm.efficiency = efficiency;
         pm.number_of_bins_used = no_of_bins_used;
         pm.number_of_boxes_successfully_put = no_of_boxes_put;
-        pm.total_number_of_boxes = boxes.size();
+
         return pm;
     }
 };

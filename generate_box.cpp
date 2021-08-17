@@ -87,5 +87,7 @@ int GenerateBox::generate_cut1() {
 void GenerateBox::generate_cut2() {
 }
 std::vector<vector_3d> GenerateBox::get_stream_of_boxes() {
+    // auto temp_boxes = stream_of_boxes;
+    // stream_of_boxes.insert(stream_of_boxes.end(), temp_boxes.begin(), temp_boxes.end());
     return stream_of_boxes;
 }

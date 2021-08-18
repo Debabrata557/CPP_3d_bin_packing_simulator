@@ -10,7 +10,7 @@
 
 performance_metric worker(int seed)
 {
-    GenerateBox gb = GenerateBox(seed, "random", 200);
+    GenerateBox gb = GenerateBox(seed, "random", 2000);
     std::vector<vector_3d> boxes = gb.get_stream_of_boxes();
 
     // std::cout << boxes.size() << "\n";
@@ -35,7 +35,7 @@ performance_metric worker(int seed)
 }
 int main()
 {
-    int episode = 10;
+    int episode = 20;
     int seed = 0;
     //std::thread threadHandles[episode];
     clock_t start_time = clock();
@@ -43,7 +43,7 @@ int main()
     double no_of_bins = 0;
     double total_boxes = 0;
     double boxes_put = 0;
-    int num_threads = 10;
+    int num_threads = 4;
     for (int k = 0; k < episode / num_threads; k++)
     {
         std::vector<std::future<performance_metric>> threadHandles(num_threads);

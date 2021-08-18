@@ -38,6 +38,21 @@ typedef struct performance_metric
     double number_of_bins_used;
     bool exception;
 } performance_metric;
+
+typedef struct eval_feature
+{
+    std::vector<int> variance;
+    std::vector<int> maximum;
+    std::vector<int> minimum;
+    long long mul_variance;
+    long long mul_maximum;
+    long long mul_minimum;
+    int newly_opened_bins_count;
+    int boxArea;
+    int box_to_be_placed_idx;
+    int new_boxes_put_count;
+    double score;
+} eval_feature;
 bool operator<(const vector_3d &a, const vector_3d &b);
 bool comp_floor_building(std::pair<vector_3d, vector_3d> &a, std::pair<vector_3d, vector_3d> &b);
 void print_vector_3d(vector_3d &a);

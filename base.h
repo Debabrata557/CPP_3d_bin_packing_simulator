@@ -18,8 +18,9 @@
 
 // std::vector<std::vector<int>> bin_state(120, std::vector<int>(180, 0));
 
-class Base {
-   protected:
+class Base
+{
+protected:
     GenerateBox gb;
     std::vector<Bin> bin_instances;
     std::vector<vector_3d> boxes;
@@ -28,11 +29,11 @@ class Base {
     std::pair<int, int> compute_max_min(int x1, int x2, int y1, int y2);
     void precompute_max_min(const std::vector<std::vector<int>> &state);
 
-   public:
+public:
     Base(/* args */);
     Base(GenerateBox gb, std::vector<Bin> &bin_instances);
     ~Base();
-    virtual performance_metric execute(int max_bin_limit, int max_open_bins) = 0;
+    virtual performance_metric execute(int max_bin_limit, int max_open_bins, int lookahead) = 0;
     bool check_with_precomputation(const std::vector<std::vector<int>> &state, std::pair<int, int> pos, vector_3d dim);
     bool check_without_precomputation(const std::vector<std::vector<int>> &state, std::pair<int, int> pos, vector_3d dim);
 };

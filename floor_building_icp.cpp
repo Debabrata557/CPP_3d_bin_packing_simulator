@@ -43,7 +43,7 @@ public:
     Floor_Building_Icp()
     {
     }
-    Floor_Building_Icp(GenerateBox gb, std::vector<Bin> &bin_instances) : Base(gb, bin_instances)
+    Floor_Building_Icp(GenerateBox gb, Sim &simulator) : Base(gb, simulator)
     {
     }
 
@@ -94,7 +94,7 @@ public:
         }
         return 0;
     }
-    performance_metric execute(int max_bin_limit, int max_open_bins)
+    performance_metric execute(Sim &simulator, int max_bin_limit, int max_open_bins)
     {
         double total_volume = 0;
         double no_of_bins_used = 0;
@@ -106,6 +106,7 @@ public:
         {
             // std::cout << box.x << " " << box.y << " " << box.z << "\n";
             int flag = 0;
+            auto &bin_instances = simulator.bin_instances;
             for (int i = 0; i < bin_instances.size(); i++)
             {
                 if (bin_instances[i].is_open())

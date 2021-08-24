@@ -12,6 +12,7 @@
 #include "config.h"
 #include "generate_box.h"
 #include "helper.h"
+#include "sim.h"
 
 #ifndef base
 #define base
@@ -22,7 +23,8 @@ class Base
 {
 protected:
     GenerateBox gb;
-    std::vector<Bin> bin_instances;
+    //std::vector<Bin> bin_instances;
+    //Sim simulator;
     std::vector<vector_3d> boxes;
     std::vector<std::vector<std::vector<std::vector<int>>>> pre_computed_max;
     std::vector<std::vector<std::vector<std::vector<int>>>> pre_computed_min;
@@ -31,9 +33,9 @@ protected:
 
 public:
     Base(/* args */);
-    Base(GenerateBox gb, std::vector<Bin> &bin_instances);
+    Base(GenerateBox gb, Sim &simulator);
     ~Base();
-    virtual performance_metric execute(int max_bin_limit, int max_open_bins, int lookahead) = 0;
+    virtual performance_metric execute(Sim &simulator, int lookahead) = 0;
     bool check_with_precomputation(const std::vector<std::vector<int>> &state, std::pair<int, int> pos, vector_3d dim);
     bool check_without_precomputation(const std::vector<std::vector<int>> &state, std::pair<int, int> pos, vector_3d dim);
 };

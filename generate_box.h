@@ -8,8 +8,9 @@
 #ifndef generate_box
 #define generate_box
 
-class GenerateBox {
-   private:
+class GenerateBox
+{
+private:
     std::vector<int> max_size, min_size;
     std::vector<vector_3d> stream_of_boxes;
     std::mt19937 generator;
@@ -18,13 +19,13 @@ class GenerateBox {
     // int scaled_min_box_length, scaled_min_box_width, scaled_min_box_height;
 
     /* data */
-   public:
+public:
     GenerateBox(/* args */);
     GenerateBox(int seed, std::string algorithm, int number = 0);
     ~GenerateBox();
 
     bool is_valid_item(std::vector<int> &item);
-    int generate_cut1();
+    int generate_cut1(int repeat);
     void generate_cut2();
     int generate_random(int number);
     std::vector<vector_3d> get_stream_of_boxes();

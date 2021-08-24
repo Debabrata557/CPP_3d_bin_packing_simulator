@@ -59,4 +59,10 @@ void print_vector_3d(vector_3d &a);
 void print_list_vector_3d(std::vector<vector_3d> &a);
 void print_pair_vector_3d(std::pair<vector_3d, vector_3d> &a);
 void print_list_pair_vector_3d(std::vector<std::pair<vector_3d, vector_3d>> &a);
+#define DEBUG_ENABLED 1
+#if DEBUG_ENABLED
+#define DEBUG(a) cout << a
+#else
+#define DEBUG(a) (void)0
+#endif
 #endif

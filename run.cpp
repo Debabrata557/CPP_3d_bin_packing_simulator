@@ -1,29 +1,30 @@
 #include <future>
 #include <thread>
 
-#include "bin.h"
 #include "first_fit.cpp"
 #include "first_fit_icp.cpp"
 #include "floor_building.cpp"
 #include "floor_building_icp.cpp"
 #include "generate_box.h"
+#include "sim.h"
 
 performance_metric worker(int seed)
 {
     GenerateBox gb = GenerateBox(seed, "random", 2000);
+    //GenerateBox gb = GenerateBox(seed, "cut1", 50);
     std::vector<vector_3d> boxes = gb.get_stream_of_boxes();
 
     // std::cout << boxes.size() << "\n";
-    std::vector<Bin> bin_instances;
     int bin_limit = 200;
-    int max_open_bin = 3;
-    int lookahead = 4;
-    std::cout << "lookahead: " << lookahead << ", max open bin: " << max_open_bin << std::endl;
+    int max_open_bin = 1;
+    int lookahead = 1;
+    Sim simulator = Sim();
+    //simulator.set_limits(bin_limit, max_open_bin);
     // Base *x = new First_Fit(gb, bin_instances);
-    Base *x = new First_Fit_Icp(gb, bin_instances);
+    Base *x = new First_Fit_Icp(gb, simulator);
     // Base *x = new Floor_Building_Icp(gb, bin_instances);
     // Base *x = new Floor_Building(gb, bin_instances);
-    performance_metric pm = x->execute(bin_limit, max_open_bin, lookahead);
+    performance_metric pm = x->execute(simulator, lookahead);
     // std::cout << bin_instances.size() << "\n";
     // for (int i = 1; i <= bin_instances.size(); i++) {
     //     std::cout << i << " " << bin_instances[i - 1].no_of_boxes_placed << " " << bin_instances[i - 1].volume << "\n";
@@ -74,7 +75,7 @@ int main()
               << " " << boxes_put / episode << "\n";
     clock_t end_time = clock();
     float time_passed = float(end_time - start_time) / (float)CLOCKS_PER_SEC;
-    std::cout << time_passed / 8.0 << "\n";
+    std::cout << time_passed / num_threads << "\n";
     return 0;
     // Base* x = new First_Fit_Icp();
     // x->execute();

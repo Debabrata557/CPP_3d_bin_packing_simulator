@@ -122,7 +122,7 @@ public:
         //std::cout << max_score << " " << idx << std::endl;
         return idx;
     }
-    int extract_state_features(Sim &temp_simulator, Sim &simulator, std::vector<int> &changed_bin_instances, eval_feature &feature)
+    void extract_state_features(Sim &temp_simulator, Sim &simulator, std::vector<int> &changed_bin_instances, eval_feature &feature)
     {
         feature.score = INT_MAX;
         //std::cout << simulator.total_number_of_boxes_placed << " " << temp_simulator.total_number_of_boxes_placed << std::endl;

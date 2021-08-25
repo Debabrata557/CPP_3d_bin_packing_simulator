@@ -29,7 +29,7 @@ public:
     void set_limits(int bins_limit, int open_bins_limit);
     int step(int bin_id, int icp_bcp_list_id, vector_3d box, int orientation);
     int step(int bin_id, std::pair<int, int> position, vector_3d box, int orientation);
-    performance_metric get_performance_metric();
+    performance_metric get_performance_metric(int calculate_open_bin_efficiency=0);
 };
 
 #endif

@@ -2,7 +2,7 @@
 
 Sim::Sim()
 {
-    max_bin_limit = 200;
+    max_bin_limit = 1;
     max_open_limit = 1;
 }
 Sim::~Sim()
@@ -48,15 +48,14 @@ int Sim::open_new_bin()
     }
     return 1;
 }
-performance_metric Sim::get_performance_metric()
+performance_metric Sim::get_performance_metric(int calculate_open_bin_efficiency)
 {
     int total_volume = 0;
     int no_of_bins_used = 0;
     int no_of_boxes_put = 0;
     for (int i = 0; i < bin_instances.size(); i++)
     {
-        if (!bin_instances[i].is_open())
-        {
+        if (calculate_open_bin_efficiency || !bin_instances[i].is_open()) {
             total_volume += bin_instances[i].volume;
             no_of_bins_used++;
             no_of_boxes_put += bin_instances[i].no_of_boxes_placed;

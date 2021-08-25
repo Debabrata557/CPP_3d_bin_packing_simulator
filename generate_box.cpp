@@ -1,11 +1,12 @@
 #include "generate_box.h"
+#include<chrono>
 
 GenerateBox::GenerateBox()
 {
 }
 GenerateBox::GenerateBox(int seed, std::string algorithm, int number)
 {
-    generator = std::mt19937(seed);
+    generator = std::mt19937(std::chrono::steady_clock::now().time_since_epoch().count());
     cpp_rand = std::uniform_int_distribution<int>(0, 1000);
     max_size = {MAX_BOX_WIDTH, MAX_BOX_LENGTH, MAX_BOX_HEIGHT};
     min_size = {MIN_BOX_WIDTH, MIN_BOX_LENGTH, MIN_BOX_HEIGHT};

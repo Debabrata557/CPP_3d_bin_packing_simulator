@@ -17,6 +17,8 @@ const int CONTROLLER_TOLERANCE = 3;
 
 const int SCALING_FACTOR = 1; // effective bin_width/height/length = bin_width/height/length *(1/scaling_factor)..Make sure the effective bin_width/height/length are integers
 
+const int DISCRETIZATION_FACTOR = 10;
+
 typedef struct vector_3d
 {
     int x, y, z;

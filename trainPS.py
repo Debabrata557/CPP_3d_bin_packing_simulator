@@ -58,7 +58,7 @@ def run_subproccess(args):
     t2 = time.time()
     with open(args[2]) as f:
         eff = float(f.readline())
-        bp = int(f.readline())
+        bp = float(f.readline())
     return {"eff":eff, "boxes_put":bp,"genTime":(t2-t1)*1000}
 
 
@@ -68,8 +68,8 @@ if __name__ == '__main__':
     # args = get_args()
 
     # NUM_SIMULATIONS = args['num_simulations']
-    client = Client('10.130.168.207:8786')
-    NPARAMS = 18*12
+    client = Client()
+    NPARAMS = 9*6*3+1
     # print('Number of parameters:', NPARAMS)
     directory = "test_dir"
     NPOPULATION = 200
@@ -97,10 +97,11 @@ if __name__ == '__main__':
             solutions = solver.ask()
 
             fitness_list_futures = []
-
+            seed = np.random.randint(0,1000)
             fitness_list_futures.append(
                             client.map(
                                 fit_func,
+                                [seed for x in range(NPOPULATION)],
                                 solutions,
                                 [x for x in range(NPOPULATION)],
                                 pure=False
@@ -152,11 +153,11 @@ if __name__ == '__main__':
         # with open(f'{directory}/solver', 'wb') as solver_file:
                 # pickle.dump(solver, solver_file)
 
-    def run_simulation(weights=None, gen=None):
+    def run_simulation(seed,weights=None, gen=None):
         filename_in = f'{directory}/weights_{gen}.txt'
         filename_out = f'{directory}/result_{gen}.txt'
         save_weights_to_file(weights,filename_in)
-        return run_subproccess(['./run',filename_in,filename_out])
+        return run_subproccess(['./run',filename_in,filename_out,str(seed)])
 
 
     # if args['test']:

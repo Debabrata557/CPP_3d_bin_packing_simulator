@@ -28,7 +28,7 @@ performance_metric worker(int seed)//episode number is seed
     // Base *x = new First_Fit_Icp(gb, simulator);
     // Base *x = new Floor_Building_Icp(gb, bin_instances);
     // Base *x = new Floor_Building(gb, bin_instances);
-    int params_size = (BIN_LENGTH*BIN_WIDTH)/(DISCRETIZATION_FACTOR*DISCRETIZATION_FACTOR); /// this should be integer.Discreteization factor must be a factor of BIN_WIDTH and BIN_LENGTH
+    int params_size = 3*((BIN_LENGTH*BIN_WIDTH)/(FILTER_SIZE*FILTER_SIZE))+1; /// this should be integer.Discreteization factor must be a factor of BIN_WIDTH and BIN_LENGTH
     std::vector<double>params(params_size,0);
     for(int i=0;i<params_size;i++){
         read_file>>params[i];
@@ -53,19 +53,20 @@ int main(int argc,char** argv)
 
     std::string write_file_name = argv[2];
 
+
     
     read_file.open(read_file_name);
     write_file.open(write_file_name);
     //std::thread threadHandles[episode];
     clock_t start_time = clock();
-    int episode = 1;
-    int seed = 0;
+    int episode = 20;
+    int seed = std::stoi(argv[3]);
     //std::thread threadHandles[episode];
     double efficiency = 0;
     double no_of_bins = 0;
     double total_boxes = 0;
     double boxes_put = 0;
-    int num_threads = 1;
+    int num_threads = 4;
     for (int k = 0; k < episode / num_threads; k++)
     {
         std::vector<std::future<performance_metric>> threadHandles(num_threads);
@@ -99,10 +100,10 @@ int main(int argc,char** argv)
     clock_t end_time = clock();
     
     float time_passed = float(end_time - start_time) / (float)CLOCKS_PER_SEC;
-    std::cout << time_passed / num_threads << "\n";
+    // std::cout << time_passed / num_threads << "\n";
     write_file << efficiency / episode << "\n";
     write_file << boxes_put / episode << "\n";
-    write_file << time_passed <<"\n";
+    // write_file << time_passed <<"\n";
     read_file.close();
     write_file.close();
     return 0;

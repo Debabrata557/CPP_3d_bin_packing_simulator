@@ -30,10 +30,12 @@ class Smart_Algorithm : public Base {
                 int z_diff = icp_bcp.second.z - icp_bcp.first.z;
 
                 if ((x_diff >= lx && y_diff >= ly && z_diff >= lz)) {
-                    // int holes = find_holes(cur_state, {icpbcp_list[i].first.x, icpbcp_list[i].first.y}, dim);
+                    int holes = find_holes(cur_state, {icpbcp_list[i].first.x, icpbcp_list[i].first.y}, dim);
                     Bin temp_bin = cur_bin;
                     temp_bin.update_state({icpbcp_list[i].first.x, icpbcp_list[i].first.y}, dim);
-                    std::vector<double>features = extract_state_features(temp_bin);
+                    eval_feature x;
+                    x.holes = holes;
+                    std::vector<double>features = extract_state_features(temp_bin,x);
                     double temp_max = evaluate(features);
                     if(temp_max > max_score){
                         idx = i;
@@ -49,10 +51,12 @@ class Smart_Algorithm : public Base {
                 int y_diff = icp_bcp.second.y - icp_bcp.first.y;
                 int z_diff = icp_bcp.second.z - icp_bcp.first.z;
                 if ((x_diff >= lx && y_diff >= ly && z_diff >= lz)) {
-                    // int holes = find_holes(cur_state, {icpbcp_list[i].first.x, icpbcp_list[i].first.y}, dim);
+                    int holes = find_holes(cur_state, {icpbcp_list[i].first.x, icpbcp_list[i].first.y}, dim);
                     Bin temp_bin = cur_bin;
                     temp_bin.update_state({icpbcp_list[i].first.x, icpbcp_list[i].first.y}, dim);
-                    std::vector<double> features = extract_state_features(temp_bin);
+                    eval_feature x;
+                    x.holes=holes;
+                    std::vector<double> features = extract_state_features(temp_bin,x);
                     double temp_max = evaluate(features);
                     if (temp_max > max_score) {
                         idx = i;
@@ -95,22 +99,41 @@ class Smart_Algorithm : public Base {
         // std::cout<<sum<<"\n";
         return sum;
     }
-    std::vector<double> extract_state_features(Bin cur_bin) {
-        auto cur_state = cur_bin.get_state();
-        std::vector<double>features;
-        for (int i = 0; i < BIN_WIDTH / DISCRETIZATION_FACTOR; i++) {
-            for (int j = 0; j < BIN_LENGTH / DISCRETIZATION_FACTOR; j++) {
+
+    void extract_pool_features(std::vector<std::vector<int>>&after_state,eval_feature  &x,int stride,int filter_size){
+        for (int i = 0; i < BIN_WIDTH / stride; i++) {
+            for (int j = 0; j < BIN_LENGTH / stride; j++) {
                 int temp_max = 0;
-                for (int inner_cell_x = i * DISCRETIZATION_FACTOR; inner_cell_x < i * DISCRETIZATION_FACTOR+DISCRETIZATION_FACTOR; inner_cell_x++) {
-                    for (int inner_cell_y = j * DISCRETIZATION_FACTOR; inner_cell_y < j*DISCRETIZATION_FACTOR+DISCRETIZATION_FACTOR;inner_cell_y++){
-                        // std::cout<<"before "<<inner_cell_x<<" "<<inner_cell_y<<"\n";
-                        temp_max=std::max(temp_max,cur_state[inner_cell_x][inner_cell_y]);
-                        // std::cout << "after " << inner_cell_x << " " << inner_cell_y << "\n";
+                int temp_min = 0;
+                double mean_height = 0;
+                for (int inner_cell_x = i * stride; inner_cell_x < i * stride + filter_size; inner_cell_x++) {
+                    for (int inner_cell_y = j * stride; inner_cell_y < j * stride + filter_size; inner_cell_y++) {
+                        temp_max = std::max(temp_max, after_state[inner_cell_x][inner_cell_y]);
+                        temp_min = std::min(temp_min, after_state[inner_cell_x][inner_cell_y]);
+                        mean_height += after_state[inner_cell_x][inner_cell_y];
                     }
                 }
-                features.push_back(temp_max);
+                x.max_pool.push_back(temp_max);
+                x.min_pool.push_back(temp_min);
+                x.avg_pool.push_back(mean_height / (filter_size * filter_size));
             }
         }
+    }
+
+    std::vector<double> extract_state_features(Bin cur_bin,eval_feature &x) {
+        auto cur_state = cur_bin.get_state();
+        std::vector<double>features;
+        extract_pool_features(cur_state,x,STRIDE,FILTER_SIZE);
+        for(int i:x.max_pool){
+            features.push_back(i);
+        }
+        for (int i : x.min_pool) {
+            features.push_back(i);
+        }
+        for (int i : x.avg_pool) {
+            features.push_back(i);
+        }
+        features.push_back(x.holes);
         return features;
     }
 

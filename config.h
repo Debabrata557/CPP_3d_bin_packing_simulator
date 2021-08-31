@@ -17,7 +17,8 @@ const int CONTROLLER_TOLERANCE = 3;
 
 const int SCALING_FACTOR = 1; // effective bin_width/height/length = bin_width/height/length *(1/scaling_factor)..Make sure the effective bin_width/height/length are integers
 
-const int DISCRETIZATION_FACTOR = 10;
+const int FILTER_SIZE = 20;
+const int STRIDE = 20;
 
 typedef struct vector_3d
 {
@@ -43,17 +44,10 @@ typedef struct performance_metric
 
 typedef struct eval_feature
 {
-    std::vector<int> variance;
-    std::vector<int> maximum;
-    std::vector<int> minimum;
-    long long mul_variance;
-    long long mul_maximum;
-    long long mul_minimum;
-    int newly_opened_bins_count;
-    int boxArea;
-    int box_to_be_placed_idx;
-    int new_boxes_put_count;
-    double score;
+    std::vector<double> max_pool;
+    std::vector<double> min_pool;
+    std::vector<double> avg_pool;
+    double holes;
 } eval_feature;
 bool operator<(const vector_3d &a, const vector_3d &b);
 bool comp_floor_building(std::pair<vector_3d, vector_3d> &a, std::pair<vector_3d, vector_3d> &b);

@@ -20,13 +20,12 @@ public:
     Bin(/* args */);
     ~Bin();
     bool open;
-    bool recentlyChanged;
+    double volume;
+    double no_of_boxes_placed;
     int update_state(std::pair<int, int> start_corner, vector_3d dim);
     int update_icpbcp_list(int icpbcp_idx, vector_3d dim);
     void print_state();
     bool is_open();
-    double volume;
-    double no_of_boxes_placed;
     std::vector<std::vector<int>> get_state();
     std::vector<std::pair<vector_3d, vector_3d>> get_icbp_list();
 };

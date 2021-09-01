@@ -71,6 +71,7 @@ public:
     }
     performance_metric execute(Sim &simulator, int max_bin_limit, int max_open_bins)
     {
+        simulator.size_of_box_stream = boxes.size();
         for (auto box : boxes)
         {
             // std::cout << box.x << " " << box.y << " " << box.z << "\n";

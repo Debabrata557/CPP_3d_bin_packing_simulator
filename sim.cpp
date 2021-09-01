@@ -4,6 +4,13 @@ Sim::Sim()
 {
     max_bin_limit = 1;
     max_open_limit = 1;
+    total_volume=0;
+    cur_open_bins=0;
+    total_number_of_boxes_placed=0;
+    bin_instances=std::vector<Bin>();
+    size_of_box_stream=0;
+
+
 }
 Sim::~Sim()
 {
@@ -40,6 +47,8 @@ int Sim::open_new_bin()
     if (bin_instances.size() >= max_bin_limit)
         return 0;
     Bin new_bin = Bin();
+    //std::cout<<"binstate";
+    //new_bin.print_state();
     bin_instances.push_back(new_bin);
     cur_open_bins++;
     if (cur_open_bins > max_open_limit)
@@ -62,6 +71,7 @@ performance_metric Sim::get_performance_metric(int calculate_open_bin_efficiency
         }
     }
     double efficiency = total_volume / (double)(no_of_bins_used * BIN_WIDTH * BIN_HEIGHT * BIN_LENGTH);
+    //std::cout<<efficiency<<" "<<total_volume<<" "<<no_of_bins_used<<" "<< no_of_boxes_put<<" "<<size_of_box_stream<<std::endl;
     performance_metric pm;
     pm.total_number_of_boxes = size_of_box_stream;
     pm.efficiency = efficiency;

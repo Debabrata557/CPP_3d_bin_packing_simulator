@@ -51,3 +51,11 @@ void print_list_pair_vector_3d(std::vector<std::pair<vector_3d, vector_3d>> &a)
         print_pair_vector_3d(a[i]);
     }
 }
+void print_state(std::vector<std::vector<int>> &a){
+    for (int i=0;i<a.size();i++){
+        for(int j=0;j<a[0].size();j++){
+            std::cout<<a[i][j]<<" ";
+        }
+        std::cout<<std::endl;
+    }
+}

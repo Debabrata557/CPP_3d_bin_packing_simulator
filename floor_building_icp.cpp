@@ -7,7 +7,8 @@ private:
     {
         int lx = dim.x, ly = dim.y, lz = dim.z;
         // std::cout << "before sort" << icpbcp_list.size() << "\n";
-        //std::sort(icpbcp_list.begin(), icpbcp_list.end(), comp_floor_building);
+        std::sort(icpbcp_list.begin(), icpbcp_list.end(), comp_floor_building);
+        //std::sort(icpbcp_list.begin(), icpbcp_list.end(), comp_first_fit);
         // std::cout << "after sort" << icpbcp_list.size() << "\n";
         for (int i = 0; i < icpbcp_list.size(); i++)
         {
@@ -50,7 +51,7 @@ public:
     {
         std::vector<std::vector<int>> cur_state = simulator.bin_instances[bin_id].get_state();
         // bin_instance.print_state();
-        std::vector<std::pair<vector_3d, vector_3d>> icpbcp_list = simulator.bin_instances[bin_id].get_icbp_list();
+        std::vector<std::pair<vector_3d, vector_3d>> &icpbcp_list = simulator.bin_instances[bin_id].get_icbp_list();
         //precompute_max_min(cur_state);
         auto idx_ori = get_action(icpbcp_list, cur_state, box);
 

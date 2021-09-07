@@ -27,7 +27,7 @@ public:
     void print_state();
     bool is_open();
     std::vector<std::vector<int>> get_state();
-    std::vector<std::pair<vector_3d, vector_3d>> get_icbp_list();
+    std::vector<std::pair<vector_3d, vector_3d>>& get_icbp_list();
 };
 
 #endif

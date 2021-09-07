@@ -146,6 +146,6 @@ void Bin::print_state() {
 std::vector<std::vector<int>> Bin::get_state() {
     return bin_state;
 }
-std::vector<std::pair<vector_3d, vector_3d>> Bin::get_icbp_list() {
+std::vector<std::pair<vector_3d, vector_3d>>& Bin::get_icbp_list() {
     return icpbcp_list;
 }

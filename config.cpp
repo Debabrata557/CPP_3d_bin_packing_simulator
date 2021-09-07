@@ -26,6 +26,11 @@ bool comp_floor_building(std::pair<vector_3d, vector_3d> &a, std::pair<vector_3d
     return temp_a < temp_b;
 }
 
+bool comp_first_fit(std::pair<vector_3d, vector_3d> &a, std::pair<vector_3d, vector_3d> &b)
+{
+    return a < b;
+}
+
 void print_vector_3d(vector_3d &a)
 {
     std::cout << " x: " << a.x << " y: " << a.y << " z: " << a.z << std::endl;

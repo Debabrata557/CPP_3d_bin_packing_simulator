@@ -7,7 +7,7 @@ private:
     {
         int lx = dim.x, ly = dim.y, lz = dim.z;
         // std::cout << "before sort" << icpbcp_list.size() << "\n";
-        std::sort(icpbcp_list.begin(), icpbcp_list.end(), comp_floor_building);
+        //std::sort(icpbcp_list.begin(), icpbcp_list.end(), comp_floor_building);
         // std::cout << "after sort" << icpbcp_list.size() << "\n";
         for (int i = 0; i < icpbcp_list.size(); i++)
         {
@@ -65,7 +65,7 @@ public:
         }
         return 0;
     }
-    performance_metric execute(Sim &simulator, int max_bin_limit, int max_open_bins)
+    performance_metric execute(Sim &simulator, int lookahead)
     {
         simulator.size_of_box_stream = boxes.size();
         for (auto box : boxes)
@@ -89,6 +89,6 @@ public:
             }
         }
 
-        return simulator.get_performance_metric();
+        return simulator.get_performance_metric(1);
     }
 };

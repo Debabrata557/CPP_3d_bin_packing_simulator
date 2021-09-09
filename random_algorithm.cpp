@@ -1,14 +1,8 @@
-
-/*
-
-Take features from the complete state.
-*/
-
 #include <algorithm>
 
 #include "base.h"
 
-class Smart_Algorithm : public Base {
+class Random_Algorithm : public Base {
    private:
    std::vector<double>params;
     int find_holes(std::vector<std::vector<int>> cur_state, std::pair<int, int> xy, vector_3d dim) {
@@ -28,6 +22,7 @@ class Smart_Algorithm : public Base {
         double max_score = INT_MIN;
         int idx = -1;
         int ori = -1;
+        std::vector<std::pair<int,int>>to_be_selected;
         for (int i = 0; i < icpbcp_list.size(); i++) {
             if (check_without_precomputation(cur_state, {icpbcp_list[i].first.x, icpbcp_list[i].first.y}, dim)) {
                 auto icp_bcp = icpbcp_list[i];
@@ -36,18 +31,19 @@ class Smart_Algorithm : public Base {
                 int z_diff = icp_bcp.second.z - icp_bcp.first.z;
 
                 if ((x_diff >= lx && y_diff >= ly && z_diff >= lz)) {
-                    int holes = find_holes(cur_state, {icpbcp_list[i].first.x, icpbcp_list[i].first.y}, dim);
-                    Bin temp_bin = cur_bin;
-                    temp_bin.update_state({icpbcp_list[i].first.x, icpbcp_list[i].first.y}, dim);
-                    eval_feature x;
-                    x.holes = holes;
-                    std::vector<double>features = extract_state_features(temp_bin,x);
-                    double temp_max = evaluate(features);
-                    if(temp_max > max_score){
-                        idx = i;
-                        max_score = temp_max;
-                        ori = 0;
-                    }
+                    // int holes = find_holes(cur_state, {icpbcp_list[i].first.x, icpbcp_list[i].first.y}, dim);
+                    // Bin temp_bin = cur_bin;
+                    // temp_bin.update_state({icpbcp_list[i].first.x, icpbcp_list[i].first.y}, dim);
+                    // eval_feature x;
+                    // x.holes = holes;
+                    // std::vector<double>features = extract_state_features(temp_bin,x);
+                    // double temp_max = evaluate(features);
+                    // if(temp_max > max_score){
+                    //     idx = i;
+                    //     max_score = temp_max;
+                    //     ori = 0;
+                    // }
+                    to_be_selected.push_back({i,0});
                 }
             }
             if (check_without_precomputation(cur_state, {icpbcp_list[i].first.x, icpbcp_list[i].first.y}, {dim.y, dim.x, dim.z})) {
@@ -57,29 +53,37 @@ class Smart_Algorithm : public Base {
                 int y_diff = icp_bcp.second.y - icp_bcp.first.y;
                 int z_diff = icp_bcp.second.z - icp_bcp.first.z;
                 if ((x_diff >= lx && y_diff >= ly && z_diff >= lz)) {
-                    int holes = find_holes(cur_state, {icpbcp_list[i].first.x, icpbcp_list[i].first.y}, {dim.y, dim.x, dim.z});
-                    Bin temp_bin = cur_bin;
-                    temp_bin.update_state({icpbcp_list[i].first.x, icpbcp_list[i].first.y}, {dim.y, dim.x, dim.z});
-                    eval_feature x;
-                    x.holes=holes;
-                    std::vector<double> features = extract_state_features(temp_bin,x);
-                    double temp_max = evaluate(features);
-                    if (temp_max > max_score) {
-                        idx = i;
-                        max_score = temp_max;
-                        ori = 1;
-                    }
+                    // int holes = find_holes(cur_state, {icpbcp_list[i].first.x, icpbcp_list[i].first.y}, dim);
+                    // Bin temp_bin = cur_bin;
+                    // temp_bin.update_state({icpbcp_list[i].first.x, icpbcp_list[i].first.y}, dim);
+                    // eval_feature x;
+                    // x.holes=holes;
+                    // std::vector<double> features = extract_state_features(temp_bin,x);
+                    // double temp_max = evaluate(features);
+                    // if (temp_max > max_score) {
+                    //     idx = i;
+                    //     max_score = temp_max;
+                    //     ori = 1;
+                    // }
+                    to_be_selected.push_back({i, 1});
                 }
             }
         }
-        return {idx, ori};
+        if(to_be_selected.size()==0){
+            return {-1,-1};
+        }
+        int selected = dist(generator)%to_be_selected.size();
+        return to_be_selected[selected];
     }
 
    public:
-    Smart_Algorithm() {
-
+    std::mt19937 generator;
+    std::uniform_int_distribution<int> dist;
+    Random_Algorithm() {
+        generator=std::mt19937(time(0));
+        dist=std::uniform_int_distribution<int>(0, 100000);
     }
-    Smart_Algorithm(GenerateBox gb, Sim &simulator,const std::vector<double>&params) : Base(gb, simulator) {
+    Random_Algorithm(GenerateBox gb, Sim &simulator) : Base(gb, simulator) {
         this->params = params;
     }
     bool put_box(Sim &simulator, int bin_id, vector_3d box) {

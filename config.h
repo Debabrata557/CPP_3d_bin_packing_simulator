@@ -19,6 +19,7 @@ const int SCALING_FACTOR = 1; // effective bin_width/height/length = bin_width/h
 
 const int FILTER_SIZE = 20;
 const int STRIDE = 20;
+const int EXTRACT_FEATURE_AREA=70;
 
 typedef struct vector_3d
 {

@@ -1,16 +1,16 @@
-
 /*
 
-Take features from the complete state.
+Take features from the area around the box where it is placed.
+
 */
 
 #include <algorithm>
 
 #include "base.h"
 
-class Smart_Algorithm : public Base {
+class Smart_Algorithm2 : public Base {
    private:
-   std::vector<double>params;
+    std::vector<double> params;
     int find_holes(std::vector<std::vector<int>> cur_state, std::pair<int, int> xy, vector_3d dim) {
         int max_height = grid_max(cur_state, xy.first, xy.first + dim.x, xy.second, xy.second + dim.y);
         int holes = 0;
@@ -41,28 +41,29 @@ class Smart_Algorithm : public Base {
                     temp_bin.update_state({icpbcp_list[i].first.x, icpbcp_list[i].first.y}, dim);
                     eval_feature x;
                     x.holes = holes;
-                    std::vector<double>features = extract_state_features(temp_bin,x);
+                    std::vector<double> features = extract_state_features(temp_bin, x, dim, icpbcp_list[i].first.x, icpbcp_list[i].first.y);
                     double temp_max = evaluate(features);
-                    if(temp_max > max_score){
+                    if (temp_max > max_score) {
                         idx = i;
                         max_score = temp_max;
                         ori = 0;
                     }
                 }
             }
-            if (check_without_precomputation(cur_state, {icpbcp_list[i].first.x, icpbcp_list[i].first.y}, {dim.y, dim.x, dim.z})) {
+            vector_3d rotated_dim={dim.y, dim.x, dim.z};
+            if (check_without_precomputation(cur_state, {icpbcp_list[i].first.x, icpbcp_list[i].first.y}, rotated_dim)) {
                 // int holes = find_holes(cur_state, {icpbcp_list[i].first.x, icpbcp_list[i].first.y}, dim);
                 auto icp_bcp = icpbcp_list[i];
                 int x_diff = icp_bcp.second.x - icp_bcp.first.x;
                 int y_diff = icp_bcp.second.y - icp_bcp.first.y;
                 int z_diff = icp_bcp.second.z - icp_bcp.first.z;
                 if ((x_diff >= lx && y_diff >= ly && z_diff >= lz)) {
-                    int holes = find_holes(cur_state, {icpbcp_list[i].first.x, icpbcp_list[i].first.y}, {dim.y, dim.x, dim.z});
+                    int holes = find_holes(cur_state, {icpbcp_list[i].first.x, icpbcp_list[i].first.y}, rotated_dim);
                     Bin temp_bin = cur_bin;
-                    temp_bin.update_state({icpbcp_list[i].first.x, icpbcp_list[i].first.y}, {dim.y, dim.x, dim.z});
+                    temp_bin.update_state({icpbcp_list[i].first.x, icpbcp_list[i].first.y}, rotated_dim);
                     eval_feature x;
-                    x.holes=holes;
-                    std::vector<double> features = extract_state_features(temp_bin,x);
+                    x.holes = holes;
+                    std::vector<double> features = extract_state_features(temp_bin, x, rotated_dim, icpbcp_list[i].first.x, icpbcp_list[i].first.y);
                     double temp_max = evaluate(features);
                     if (temp_max > max_score) {
                         idx = i;
@@ -76,10 +77,9 @@ class Smart_Algorithm : public Base {
     }
 
    public:
-    Smart_Algorithm() {
-
+    Smart_Algorithm2() {
     }
-    Smart_Algorithm(GenerateBox gb, Sim &simulator,const std::vector<double>&params) : Base(gb, simulator) {
+    Smart_Algorithm2(GenerateBox gb, Sim &simulator, const std::vector<double> &params) : Base(gb, simulator) {
         this->params = params;
     }
     bool put_box(Sim &simulator, int bin_id, vector_3d box) {
@@ -106,31 +106,48 @@ class Smart_Algorithm : public Base {
         return sum;
     }
 
-    void extract_pool_features(std::vector<std::vector<int>>&after_state,eval_feature  &x,int stride,int filter_size){
-        for (int i = 0; i < BIN_WIDTH / stride; i++) {
-            for (int j = 0; j < BIN_LENGTH / stride; j++) {
+    void extract_pool_features(std::vector<std::vector<int>> &after_state,int start_x,int end_x,int start_y,int end_y, eval_feature &x, int stride, int filter_size) {
+        for(int i=start_x;i<end_x;i+=stride){
+            for(int j=start_y;j<end_y;j+=stride){
                 int temp_max = 0;
                 int temp_min = 0;
                 double mean_height = 0;
-                for (int inner_cell_x = i * stride; inner_cell_x < i * stride + filter_size; inner_cell_x++) {
-                    for (int inner_cell_y = j * stride; inner_cell_y < j * stride + filter_size; inner_cell_y++) {
-                        temp_max = std::max(temp_max, after_state[inner_cell_x][inner_cell_y]);
-                        temp_min = std::min(temp_min, after_state[inner_cell_x][inner_cell_y]);
-                        mean_height += after_state[inner_cell_x][inner_cell_y];
+                int cell_count = 0;
+                for(int inner_i = i;inner_i<=std::min(i+filter_size-1,end_x);inner_i++){
+                    for (int inner_j = j; inner_j <= std::min(j + filter_size - 1, end_y); inner_j++) {
+                        temp_max = std::max(temp_max, after_state[inner_i][inner_j]);
+                        temp_min = std::min(temp_min, after_state[inner_i][inner_j]);
+                        mean_height += after_state[inner_i][inner_j];
+                        cell_count++;
                     }
                 }
                 x.max_pool.push_back(temp_max);
                 x.min_pool.push_back(temp_min);
-                x.avg_pool.push_back(mean_height / (filter_size * filter_size));
+                x.avg_pool.push_back(mean_height / cell_count);
             }
         }
     }
 
-    std::vector<double> extract_state_features(Bin cur_bin,eval_feature &x) {
+    std::vector<double> extract_state_features(Bin cur_bin, eval_feature &x, vector_3d &dim, int pos_x, int pos_y) {
+        int start_x=std::max(0,pos_x+dim.x/2-MAX_BOX_WIDTH/2-10);
+        int start_y=std::max(0, pos_y+dim.y/2-MAX_BOX_LENGTH/2-10);
+        int end_x = std::min(BIN_WIDTH, pos_x + dim.x / 2 + MAX_BOX_WIDTH / 2+11);
+        int end_y = std::min(BIN_LENGTH, pos_y + dim.y / 2 + MAX_BOX_LENGTH / 2+11);
+
+        if(start_x==0)
+            end_x=EXTRACT_FEATURE_AREA;
+        if(start_y==0)
+            end_y=EXTRACT_FEATURE_AREA;
+        if(end_y==BIN_LENGTH)
+            start_y=BIN_LENGTH-EXTRACT_FEATURE_AREA;
+        if(end_x==BIN_WIDTH)
+            start_x=BIN_WIDTH-EXTRACT_FEATURE_AREA;
+
+
         auto cur_state = cur_bin.get_state();
-        std::vector<double>features;
-        extract_pool_features(cur_state,x,STRIDE,FILTER_SIZE);
-        for(int i:x.max_pool){
+        std::vector<double> features;
+        extract_pool_features(cur_state, start_x,start_y,end_x, end_y,x, STRIDE, FILTER_SIZE);
+        for (int i : x.max_pool) {
             features.push_back(i);
         }
         for (int i : x.min_pool) {
@@ -140,11 +157,12 @@ class Smart_Algorithm : public Base {
             features.push_back(i);
         }
         features.push_back(x.holes);
+        features.push_back(1); //bias
         return features;
     }
 
     performance_metric execute(Sim &simulator, int lookahead) {
-        simulator.size_of_box_stream=boxes.size();
+        simulator.size_of_box_stream = boxes.size();
         for (auto box : boxes) {
             // std::cout << box.x << " " << box.y << " " << box.z << "\n";
             int flag = 0;

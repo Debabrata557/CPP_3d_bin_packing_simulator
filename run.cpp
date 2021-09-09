@@ -28,9 +28,11 @@ performance_metric worker(int seed)//episode number is seed
     // Base *x = new First_Fit_Icp(gb, simulator);
     // Base *x = new Floor_Building_Icp(gb, bin_instances);
     // Base *x = new Floor_Building(gb, bin_instances);
-    int params_size = 3*((BIN_LENGTH*BIN_WIDTH)/(FILTER_SIZE*FILTER_SIZE))+1; /// this should be integer.Discreteization factor must be a factor of BIN_WIDTH and BIN_LENGTH
-    std::vector<double>params(params_size,0);
-    for(int i=0;i<params_size;i++){
+    int NPARAMS_X = (EXTRACT_FEATURE_AREA+STRIDE-1)/STRIDE;
+    int NPARAMS_Y = (EXTRACT_FEATURE_AREA+STRIDE-1)/STRIDE;
+    int NPARAMS = 3*NPARAMS_X*NPARAMS_Y+1+1;  /// this should be integer.Discreteization factor must be a factor of BIN_WIDTH and BIN_LENGTH
+    std::vector<double> params(NPARAMS, 0);
+    for (int i = 0; i < NPARAMS; i++) {
         read_file>>params[i];
         // std::cout<<params[i]<<"\n";
     }

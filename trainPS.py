@@ -69,11 +69,16 @@ if __name__ == '__main__':
 
     # NUM_SIMULATIONS = args['num_simulations']
     client = Client()
-    NPARAMS = 9*6*3+1
+    FILTER_SIZE = 20
+    STRIDE = 20
+    EXTRACT_FEATURE_AREA=70
+    NPARAMS_X = (EXTRACT_FEATURE_AREA+STRIDE-1)//STRIDE
+    NPARAMS_Y = (EXTRACT_FEATURE_AREA+STRIDE-1)//STRIDE
+    NPARAMS = 3*NPARAMS_X*NPARAMS_Y+1+1
     # print('Number of parameters:', NPARAMS)
     directory = "test_dir"
-    NPOPULATION = 200
-    MAXITER = 100
+    NPOPULATION = 50
+    MAXITER = 10
     def save_weights_to_file(weights, filename):
          with open(filename,"w") as f:
             for w in weights:

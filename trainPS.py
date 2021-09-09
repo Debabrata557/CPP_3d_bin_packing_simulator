@@ -69,8 +69,8 @@ if __name__ == '__main__':
 
     # NUM_SIMULATIONS = args['num_simulations']
     client = Client()
-    FILTER_SIZE = 20
-    STRIDE = 20
+    FILTER_SIZE = 30
+    STRIDE = 30
     EXTRACT_FEATURE_AREA=70
     NPARAMS_X = (EXTRACT_FEATURE_AREA+STRIDE-1)//STRIDE
     NPARAMS_Y = (EXTRACT_FEATURE_AREA+STRIDE-1)//STRIDE

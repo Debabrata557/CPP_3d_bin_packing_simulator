@@ -9,6 +9,7 @@
 #include "generate_box.h"
 #include "sim.h"
 #include "smart_algorithm.cpp"
+#include "smart_algorithm2.cpp"
 
 std::ifstream read_file;
 std::ofstream write_file;
@@ -36,7 +37,8 @@ performance_metric worker(int seed)//episode number is seed
         read_file>>params[i];
         // std::cout<<params[i]<<"\n";
     }
-    Base *x = new Smart_Algorithm(gb, simulator,params);
+    // Base* x = new Smart_Algorithm(gb, simulator, params);
+    Base* x = new Smart_Algorithm2(gb, simulator, params);
     performance_metric pm = x->execute(simulator, lookahead);
     // std::cout << bin_instances.size() << "\n";
     // for (int i = 1; i <= bin_instances.size(); i++) {

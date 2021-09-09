@@ -1,5 +1,5 @@
-output: sim.o base.o smart_algorithm.o first_fit.o first_fit_icp.o config.o helper.o bin.o generate_box.o run.o
-	g++ -g sim.o base.o smart_algorithm.o first_fit.o first_fit_icp.o config.o helper.o bin.o generate_box.o run.o -o run -pthread
+output: sim.o base.o smart_algorithm2.o smart_algorithm.o first_fit.o first_fit_icp.o config.o helper.o bin.o generate_box.o run.o
+	g++ -g sim.o base.o smart_algorithm2.o smart_algorithm.o first_fit.o first_fit_icp.o config.o helper.o bin.o generate_box.o run.o -o run -pthread
 
 first_fit.o: first_fit.cpp
 	g++ -c -g first_fit.cpp
@@ -9,6 +9,9 @@ first_fit_icp.o: first_fit_icp.cpp
 
 smart_algorithm.o: smart_algorithm.cpp
 	g++ -c -g smart_algorithm.cpp
+
+smart_algorithm2.o: smart_algorithm2.cpp
+	g++ -c -g smart_algorithm2.cpp
 
 base.o: base.cpp
 	g++ -c -g base.cpp

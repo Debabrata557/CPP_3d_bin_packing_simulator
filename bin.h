@@ -8,25 +8,26 @@
 
 // std::vector<std::vector<int>> bin_state(120, std::vector<int>(180, 0));
 
-class Bin {
-   private:
+class Bin
+{
+private:
     std::vector<std::vector<int>> bin_state;
     std::vector<std::pair<vector_3d, vector_3d>> icpbcp_list;
     bool is_overlapping(std::pair<vector_3d, vector_3d> icpbcp, vector_3d size, vector_3d pos);
     void set_open();
 
-   public:
+public:
     Bin(/* args */);
     ~Bin();
     bool open;
-    int update_state(std::pair<int, int> start_corner, vector_3d dim);
-    int update_icpbcp_list(int icpbcp_idx, vector_3d dim);
-    void print_state();
-    bool is_open();
     double volume;
     double no_of_boxes_placed;
+    int update_state(std::pair<int, int> start_corner, vector_3d dim);
+    int update_icpbcp_list(vector_3d pos, vector_3d dim);
+    void print_state();
+    bool is_open();
     std::vector<std::vector<int>> get_state();
-    std::vector<std::pair<vector_3d, vector_3d>> get_icbp_list();
+    std::vector<std::pair<vector_3d, vector_3d>>& get_icbp_list();
 };
 
 #endif

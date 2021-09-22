@@ -36,10 +36,10 @@ int Bin::update_state(std::pair<int, int> start_corner, vector_3d dim) {
         }
     } catch (const std::exception &e) {
         std::cerr << e.what() << '\n';
-        return 0;
+        return -1;
     }
 
-    return 1;
+    return cur_max_height-height;
 }
 
 bool Bin::is_overlapping(std::pair<vector_3d, vector_3d> icpbcp, vector_3d pos, vector_3d size) {
@@ -59,7 +59,7 @@ bool Bin::is_overlapping(std::pair<vector_3d, vector_3d> icpbcp, vector_3d pos, 
 }
 
 void Bin::set_open() {
-    // std::vector<std::pair<vector_3d, vector_3d>> temp_icpbcp_list;
+    std::vector<std::pair<vector_3d, vector_3d>> temp_icpbcp_list;
     bool flag = false;
     for (auto icp_bcp : icpbcp_list) {
         int x_diff = icp_bcp.second.x - icp_bcp.first.x;
@@ -68,17 +68,17 @@ void Bin::set_open() {
 
         if (x_diff >= MIN_BOX_WIDTH && y_diff >= MIN_BOX_LENGTH && z_diff >= MIN_BOX_HEIGHT) {
             flag = true;
-            // temp_icpbcp_list.push_back(icp_bcp);
+            temp_icpbcp_list.push_back(icp_bcp);
         }
     }
-    // icpbcp_list.clear();
-    // icpbcp_list = temp_icpbcp_list;
+    icpbcp_list.clear();
+    icpbcp_list = temp_icpbcp_list;
     open = flag;
 }
 
-int Bin::update_icpbcp_list(int icpbcp_idx, vector_3d dim) {
+int Bin::update_icpbcp_list(vector_3d pos, vector_3d dim) {
     try {
-        vector_3d pos = icpbcp_list[icpbcp_idx].first;
+        //vector_3d pos = icpbcp_list[icpbcp_idx].first;
         int x_o = pos.x;
         int y_o = pos.y;
         int z_o = pos.z;
@@ -126,11 +126,11 @@ int Bin::update_icpbcp_list(int icpbcp_idx, vector_3d dim) {
             icpbcp_list.push_back(it);
         }
 
-        // Bin::set_open();
+        Bin::set_open();
 
     } catch (const std::exception &e) {
         std::cerr << e.what() << '\n';
-        return 0;
+        return -1;
     }
 
     return 1;
@@ -146,6 +146,6 @@ void Bin::print_state() {
 std::vector<std::vector<int>> Bin::get_state() {
     return bin_state;
 }
-std::vector<std::pair<vector_3d, vector_3d>> Bin::get_icbp_list() {
+std::vector<std::pair<vector_3d, vector_3d>>& Bin::get_icbp_list() {
     return icpbcp_list;
 }

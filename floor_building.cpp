@@ -1,8 +1,10 @@
 #include "base.h"
 
-class Floor_Building : public Base {
-   private:
-    int score(const std::vector<std::vector<int>> &state, const std::pair<int, int> &pos, const vector_3d &dim) {
+class Floor_Building : public Base
+{
+private:
+    int score(const std::vector<std::vector<int>> &state, const std::pair<int, int> &pos, const vector_3d &dim)
+    {
         int lx = dim.x;
         int ly = dim.y;
 
@@ -13,7 +15,8 @@ class Floor_Building : public Base {
         int max_height = compute_max_min(minx, maxx, miny, maxy).first;
         return max_height;
     }
-    std::vector<int> get_action(std::vector<std::vector<int>> &state, vector_3d &dim) {
+    std::vector<int> get_action(std::vector<std::vector<int>> &state, vector_3d &dim)
+    {
         int lx = dim.x, ly = dim.y, lz = dim.z;
         vector_3d pos_orientation = {-40, -40, 0};
         int min_height = 200;
@@ -21,14 +24,18 @@ class Floor_Building : public Base {
         // #bin_packing_helper.printStates(state)
         //std::cout<<"precomputation starting"<<std::endl;
         //std::cout<<"precomputation done"<<std::endl;
-        for (int i = 0; i < BIN_WIDTH; i++) {
-            for (int j = 0; j < BIN_LENGTH; j++) {
+        for (int i = 0; i < BIN_WIDTH; i++)
+        {
+            for (int j = 0; j < BIN_LENGTH; j++)
+            {
                 int flag = check_with_precomputation(state, {i, j}, {lx, ly, lz});
-                if (flag && min_height > score(state, {i, j}, {lx, ly, lz})) {
+                if (flag && min_height > score(state, {i, j}, {lx, ly, lz}))
+                {
                     pos_orientation = {i, j, 0};
                 }
                 flag = check_with_precomputation(state, {i, j}, {ly, lx, lz});
-                if (flag && min_height > score(state, {i, j}, {ly, lx, lz})) {
+                if (flag && min_height > score(state, {i, j}, {ly, lx, lz}))
+                {
                     pos_orientation = {i, j, 1};
                 }
             }
@@ -36,90 +43,56 @@ class Floor_Building : public Base {
         return {pos_orientation.x, pos_orientation.y, pos_orientation.z};
     }
 
-   public:
-    Floor_Building() {
+public:
+    Floor_Building()
+    {
         pre_computed_max = std::vector<std::vector<std::vector<std::vector<int>>>>(BIN_WIDTH + 1, std::vector<std::vector<std::vector<int>>>(BIN_LENGTH + 1, std::vector<std::vector<int>>(10, std::vector<int>(10))));
         pre_computed_min = std::vector<std::vector<std::vector<std::vector<int>>>>(BIN_WIDTH + 1, std::vector<std::vector<std::vector<int>>>(BIN_LENGTH + 1, std::vector<std::vector<int>>(10, std::vector<int>(10))));
     }
-    Floor_Building(GenerateBox gb, std::vector<Bin> &bin_instances) : Base(gb, bin_instances) {
+    Floor_Building(GenerateBox gb, Sim &simulator) : Base(gb, simulator)
+    {
         pre_computed_max = std::vector<std::vector<std::vector<std::vector<int>>>>(BIN_WIDTH + 1, std::vector<std::vector<std::vector<int>>>(BIN_LENGTH + 1, std::vector<std::vector<int>>(10, std::vector<int>(10))));
         pre_computed_min = std::vector<std::vector<std::vector<std::vector<int>>>>(BIN_WIDTH + 1, std::vector<std::vector<std::vector<int>>>(BIN_LENGTH + 1, std::vector<std::vector<int>>(10, std::vector<int>(10))));
     }
-    bool put_box(Bin &bin_instance, vector_3d box, double &total_volume) {
-        std::vector<std::vector<int>> cur_state = bin_instance.get_state();
+    bool put_box(Sim &simulator, int bin_id, vector_3d box)
+    {
+        std::vector<std::vector<int>> cur_state = simulator.bin_instances[bin_id].get_state();
         precompute_max_min(cur_state);
         std::vector<int> pose = get_action(cur_state, box);
-        if (pose[0] >= 0) {
-            if (pose[2] == 0) {
-                if (bin_instance.update_state({pose[0], pose[1]}, box)) {
-                    total_volume += box.x * box.y * box.z;
-                    bin_instance.volume += box.x * box.y * box.z;
-                    bin_instance.no_of_boxes_placed++;
-                    return 1;
-                } else {
-                    std::cout << "exception occured" << std::endl;
-                    return 0;
-                }
-            } else {
-                if (bin_instance.update_state({pose[0], pose[1]}, {box.y, box.x, box.z})) {
-                    total_volume += box.x * box.y * box.z;
-                    bin_instance.volume += box.x * box.y * box.z;
-                    bin_instance.no_of_boxes_placed++;
-                    return 1;
-                } else {
-                    std::cout << "exception occured" << std::endl;
-                    return 0;
-                }
-            }
-        } else {
+        if (pose[0] >= 0)
+        {
+            return simulator.step(bin_id, {pose[0], pose[1]}, box, pose[2])!=-1;
+        }
+        else
+        {
             //a  std::cout << "could not place the box" << std::endl;
         }
         return 0;
     }
-    performance_metric execute(int max_bin_limit, int max_open_bins) {
-        double total_volume = 0;
-        double no_of_bins_used = 0;
-        double no_of_boxes_put = 0;
-        performance_metric pm;
-        int to_be_closed = 0;
-        int cur_open = 0;
-        for (auto box : boxes) {
+    performance_metric execute(Sim &simulator, int max_bin_limit, int max_open_bins)
+    {
+        simulator.size_of_box_stream = boxes.size();
+        for (auto box : boxes)
+        {
             // std::cout << box.x << " " << box.y << " " << box.z << "\n";
             int flag = 0;
-            for (int i = 0; i < bin_instances.size(); i++) {
-                if (bin_instances[i].is_open()) {
-                    if (put_box(bin_instances[i], box, total_volume)) {
+            for (int i = 0; i < simulator.bin_instances.size(); i++)
+            {
+                if (simulator.bin_instances[i].is_open())
+                {
+                    if (put_box(simulator, i, box))
+                    {
                         flag = 1;
-                        no_of_boxes_put++;
                         break;
                     }
                 }
             }
-            if (!flag && no_of_bins_used < max_bin_limit) {
-                Bin new_bin = Bin();
-                if (put_box(new_bin, box, total_volume)) {
-                    no_of_boxes_put++;
-                }
-                bin_instances.push_back(new_bin);
-                no_of_bins_used++;
-                cur_open++;
-                if (cur_open > max_open_bins) {
-                    bin_instances[to_be_closed].open = false;
-                    to_be_closed++;
-                    cur_open--;
-                }
+            if (!flag && simulator.open_new_bin())
+            {
+                put_box(simulator, simulator.bin_instances.size() - 1, box);
             }
         }
 
-        // for (int i = 1; i <= bin_instances.size(); i++) {
-        //     std::cout << i << " " << bin_instances[i - 1].no_of_boxes_placed << " " << bin_instances[i - 1].volume / (BIN_WIDTH * BIN_HEIGHT * BIN_LENGTH) << "\n";
-        // }
-
-        double efficiency = total_volume / (double)(no_of_bins_used * BIN_WIDTH * BIN_HEIGHT * BIN_LENGTH);
-        pm.efficiency = efficiency;
-        pm.number_of_bins_used = no_of_bins_used;
-        pm.number_of_boxes_successfully_put = no_of_boxes_put;
-        pm.total_number_of_boxes = boxes.size();
-        return pm;
+        return simulator.get_performance_metric();
     }
 };

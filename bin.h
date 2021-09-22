@@ -23,7 +23,7 @@ public:
     double volume;
     double no_of_boxes_placed;
     int update_state(std::pair<int, int> start_corner, vector_3d dim);
-    int update_icpbcp_list(int icpbcp_idx, vector_3d dim);
+    int update_icpbcp_list(vector_3d pos, vector_3d dim);
     void print_state();
     bool is_open();
     std::vector<std::vector<int>> get_state();

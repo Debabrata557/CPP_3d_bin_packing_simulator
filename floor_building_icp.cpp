@@ -58,7 +58,7 @@ public:
         // std::cout << idx_ori.first << "\n";
         if (idx_ori.first >= 0)
         {
-            return simulator.step(bin_id, idx_ori.first, box, idx_ori.second);
+            return simulator.step(bin_id, idx_ori.first, box, idx_ori.second)!=-1;
         }
         else
         {

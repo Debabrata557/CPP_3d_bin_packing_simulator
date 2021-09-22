@@ -69,16 +69,18 @@ if __name__ == '__main__':
 
     # NUM_SIMULATIONS = args['num_simulations']
     client = Client()
-    FILTER_SIZE = 30
-    STRIDE = 30
+    FILTER_SIZE = 10
+    STRIDE = 10
     EXTRACT_FEATURE_AREA=70
-    NPARAMS_X = (EXTRACT_FEATURE_AREA+STRIDE-1)//STRIDE
-    NPARAMS_Y = (EXTRACT_FEATURE_AREA+STRIDE-1)//STRIDE
-    NPARAMS = 3*NPARAMS_X*NPARAMS_Y+1+1
+    NPARAMS_X = (120+STRIDE-1)//STRIDE
+    NPARAMS_Y = (180+STRIDE-1)//STRIDE
+    # NPARAMS_X = (EXTRACT_FEATURE_AREA+STRIDE-1)//STRIDE
+    # NPARAMS_Y = (EXTRACT_FEATURE_AREA+STRIDE-1)//STRIDE
+    NPARAMS = 3*NPARAMS_X*NPARAMS_Y+1+1+1
     # print('Number of parameters:', NPARAMS)
     directory = "test_dir"
     NPOPULATION = 50
-    MAXITER = 10
+    MAXITER = 35
     def save_weights_to_file(weights, filename):
          with open(filename,"w") as f:
             for w in weights:
@@ -103,6 +105,7 @@ if __name__ == '__main__':
 
             fitness_list_futures = []
             seed = np.random.randint(0,1000)
+            #seed=0
             fitness_list_futures.append(
                             client.map(
                                 fit_func,

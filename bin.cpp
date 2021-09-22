@@ -36,10 +36,10 @@ int Bin::update_state(std::pair<int, int> start_corner, vector_3d dim) {
         }
     } catch (const std::exception &e) {
         std::cerr << e.what() << '\n';
-        return 0;
+        return -1;
     }
 
-    return 1;
+    return cur_max_height-height;
 }
 
 bool Bin::is_overlapping(std::pair<vector_3d, vector_3d> icpbcp, vector_3d pos, vector_3d size) {
@@ -76,9 +76,9 @@ void Bin::set_open() {
     open = flag;
 }
 
-int Bin::update_icpbcp_list(int icpbcp_idx, vector_3d dim) {
+int Bin::update_icpbcp_list(vector_3d pos, vector_3d dim) {
     try {
-        vector_3d pos = icpbcp_list[icpbcp_idx].first;
+        //vector_3d pos = icpbcp_list[icpbcp_idx].first;
         int x_o = pos.x;
         int y_o = pos.y;
         int z_o = pos.z;
@@ -130,7 +130,7 @@ int Bin::update_icpbcp_list(int icpbcp_idx, vector_3d dim) {
 
     } catch (const std::exception &e) {
         std::cerr << e.what() << '\n';
-        return 0;
+        return -1;
     }
 
     return 1;

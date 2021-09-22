@@ -61,7 +61,7 @@ public:
         std::vector<int> pose = get_action(cur_state, box);
         if (pose[0] >= 0)
         {
-            return simulator.step(bin_id, {pose[0], pose[1]}, box, pose[2]);
+            return simulator.step(bin_id, {pose[0], pose[1]}, box, pose[2])!=-1;
         }
         else
         {

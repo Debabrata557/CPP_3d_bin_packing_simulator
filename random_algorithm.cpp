@@ -31,40 +31,16 @@ class Random_Algorithm : public Base {
                 int z_diff = icp_bcp.second.z - icp_bcp.first.z;
 
                 if ((x_diff >= lx && y_diff >= ly && z_diff >= lz)) {
-                    // int holes = find_holes(cur_state, {icpbcp_list[i].first.x, icpbcp_list[i].first.y}, dim);
-                    // Bin temp_bin = cur_bin;
-                    // temp_bin.update_state({icpbcp_list[i].first.x, icpbcp_list[i].first.y}, dim);
-                    // eval_feature x;
-                    // x.holes = holes;
-                    // std::vector<double>features = extract_state_features(temp_bin,x);
-                    // double temp_max = evaluate(features);
-                    // if(temp_max > max_score){
-                    //     idx = i;
-                    //     max_score = temp_max;
-                    //     ori = 0;
-                    // }
                     to_be_selected.push_back({i,0});
                 }
             }
-            if (check_without_precomputation(cur_state, {icpbcp_list[i].first.x, icpbcp_list[i].first.y}, {dim.y, dim.x, dim.z})) {
-                // int holes = find_holes(cur_state, {icpbcp_list[i].first.x, icpbcp_list[i].first.y}, dim);
+            vector_3d rotated_dim={dim.y, dim.x, dim.z};
+            if (check_without_precomputation(cur_state, {icpbcp_list[i].first.x, icpbcp_list[i].first.y}, rotated_dim)) {
                 auto icp_bcp = icpbcp_list[i];
                 int x_diff = icp_bcp.second.x - icp_bcp.first.x;
                 int y_diff = icp_bcp.second.y - icp_bcp.first.y;
                 int z_diff = icp_bcp.second.z - icp_bcp.first.z;
                 if ((x_diff >= lx && y_diff >= ly && z_diff >= lz)) {
-                    // int holes = find_holes(cur_state, {icpbcp_list[i].first.x, icpbcp_list[i].first.y}, dim);
-                    // Bin temp_bin = cur_bin;
-                    // temp_bin.update_state({icpbcp_list[i].first.x, icpbcp_list[i].first.y}, dim);
-                    // eval_feature x;
-                    // x.holes=holes;
-                    // std::vector<double> features = extract_state_features(temp_bin,x);
-                    // double temp_max = evaluate(features);
-                    // if (temp_max > max_score) {
-                    //     idx = i;
-                    //     max_score = temp_max;
-                    //     ori = 1;
-                    // }
                     to_be_selected.push_back({i, 1});
                 }
             }
@@ -80,11 +56,14 @@ class Random_Algorithm : public Base {
     std::mt19937 generator;
     std::uniform_int_distribution<int> dist;
     Random_Algorithm() {
-        generator=std::mt19937(time(0));
+        std::random_device rand_dev;
+        generator=std::mt19937(rand_dev());
         dist=std::uniform_int_distribution<int>(0, 100000);
     }
     Random_Algorithm(GenerateBox gb, Sim &simulator) : Base(gb, simulator) {
-        this->params = params;
+        std::random_device rand_dev;
+        generator=std::mt19937(rand_dev());
+        dist=std::uniform_int_distribution<int>(0, 100000);
     }
     bool put_box(Sim &simulator, int bin_id, vector_3d box) {
         std::vector<std::vector<int>> cur_state = simulator.bin_instances[bin_id].get_state();
@@ -95,7 +74,7 @@ class Random_Algorithm : public Base {
 
         // std::cout << idx_ori.first << "\n";
         if (idx_ori.first >= 0) {
-            return simulator.step(bin_id, idx_ori.first, box, idx_ori.second);
+            return simulator.step(bin_id, idx_ori.first, box, idx_ori.second)!=-1;
         } else {
             //std::cout << "could not place the box" << std::endl;
         }

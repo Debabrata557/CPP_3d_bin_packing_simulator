@@ -10,6 +10,7 @@
 #include "sim.h"
 #include "smart_algorithm.cpp"
 #include "smart_algorithm2.cpp"
+#include "random_algorithm.cpp"
 
 std::ifstream read_file;
 std::ofstream write_file;
@@ -29,16 +30,19 @@ performance_metric worker(int seed)//episode number is seed
     // Base *x = new First_Fit_Icp(gb, simulator);
     // Base *x = new Floor_Building_Icp(gb, bin_instances);
     // Base *x = new Floor_Building(gb, bin_instances);
-    int NPARAMS_X = (EXTRACT_FEATURE_AREA+STRIDE-1)/STRIDE;
-    int NPARAMS_Y = (EXTRACT_FEATURE_AREA+STRIDE-1)/STRIDE;
-    int NPARAMS = 3*NPARAMS_X*NPARAMS_Y+1+1;  /// this should be integer.Discreteization factor must be a factor of BIN_WIDTH and BIN_LENGTH
+    int NPARAMS_X = (BIN_WIDTH+STRIDE-1)/STRIDE;
+    int NPARAMS_Y = (BIN_LENGTH+STRIDE-1)/STRIDE;
+    // int NPARAMS_X = (EXTRACT_FEATURE_AREA+STRIDE-1)/STRIDE;
+    // int NPARAMS_Y = (EXTRACT_FEATURE_AREA+STRIDE-1)/STRIDE;
+    int NPARAMS = 3*NPARAMS_X*NPARAMS_Y+1+1+1;  /// this should be integer.Discreteization factor must be a factor of BIN_WIDTH and BIN_LENGTH
     std::vector<double> params(NPARAMS, 0);
     for (int i = 0; i < NPARAMS; i++) {
         read_file>>params[i];
         // std::cout<<params[i]<<"\n";
     }
-    // Base* x = new Smart_Algorithm(gb, simulator, params);
-    Base* x = new Smart_Algorithm2(gb, simulator, params);
+    Base* x = new Smart_Algorithm(gb, simulator, params);
+    //Base* x = new Random_Algorithm(gb, simulator);
+    //Base* x = new Smart_Algorithm2(gb, simulator, params);
     performance_metric pm = x->execute(simulator, lookahead);
     // std::cout << bin_instances.size() << "\n";
     // for (int i = 1; i <= bin_instances.size(); i++) {
@@ -63,20 +67,22 @@ int main(int argc,char** argv)
     write_file.open(write_file_name);
     //std::thread threadHandles[episode];
     clock_t start_time = clock();
-    int episode = 20;
+    int episode = 1;
     int seed = std::stoi(argv[3]);
     //std::thread threadHandles[episode];
     double efficiency = 0;
     double no_of_bins = 0;
     double total_boxes = 0;
     double boxes_put = 0;
-    int num_threads = 4;
+    int num_threads = 1;
+    bool constant_seed=0;
     for (int k = 0; k < episode / num_threads; k++)
     {
         std::vector<std::future<performance_metric>> threadHandles(num_threads);
         for (int i = 0; i < num_threads; i++)
         {
-            threadHandles[i] = std::async(worker, seed++);
+            threadHandles[i] = std::async(worker, seed);
+            if(!constant_seed)seed++;
             //threadHandles[i] = std::thread(worker, i);
         }
 

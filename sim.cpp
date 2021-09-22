@@ -85,34 +85,38 @@ int Sim::step(int bin_id, int icp_bcp_list_id, vector_3d box, int orientation)
     auto icp_bcp_list = bin_instances[bin_id].get_icbp_list();
     if (orientation == 0)
     {
-        if (bin_instances[bin_id].update_icpbcp_list(icp_bcp_list_id, box) && bin_instances[bin_id].update_state({icp_bcp_list[icp_bcp_list_id].first.x, icp_bcp_list[icp_bcp_list_id].first.y}, box))
+        auto pos=icp_bcp_list[icp_bcp_list_id].first;
+        int height=bin_instances[bin_id].update_state({pos.x, pos.y}, box);
+        if ( height!=-1 && bin_instances[bin_id].update_icpbcp_list({pos.x, pos.y, height}, box)!=-1)
         {
             total_volume += box.x * box.y * box.z;
             total_number_of_boxes_placed++;
             bin_instances[bin_id].volume += box.x * box.y * box.z;
             bin_instances[bin_id].no_of_boxes_placed++;
-            return 1;
+            return height;
         }
         else
         {
             std::cout << "exception occured in step" << std::endl;
-            return 0;
+            return -1;
         }
     }
     else
     {
-        if (bin_instances[bin_id].update_icpbcp_list(icp_bcp_list_id, {box.y, box.x, box.z}) && bin_instances[bin_id].update_state({icp_bcp_list[icp_bcp_list_id].first.x, icp_bcp_list[icp_bcp_list_id].first.y}, {box.y, box.x, box.z}))
+        auto pos=icp_bcp_list[icp_bcp_list_id].first;
+        int height=bin_instances[bin_id].update_state({pos.x, pos.y}, {box.y, box.x, box.z});
+        if (height!=-1 && bin_instances[bin_id].update_icpbcp_list({pos.x, pos.y, height}, {box.y, box.x, box.z})!=-1)
         {
             total_volume += box.x * box.y * box.z;
             total_number_of_boxes_placed++;
             bin_instances[bin_id].volume += box.x * box.y * box.z;
             bin_instances[bin_id].no_of_boxes_placed++;
-            return 1;
+            return height;
         }
         else
         {
             std::cout << "exception occured in step" << std::endl;
-            return 0;
+            return -1;
         }
     }
 }
@@ -121,34 +125,36 @@ int Sim::step(int bin_id, std::pair<int, int> position, vector_3d box, int orien
     auto &bin_instance = bin_instances[bin_id];
     if (orientation == 0)
     {
-        if (bin_instance.update_state(position, box))
+        int height=bin_instance.update_state(position, box);
+        if (height!=-1)
         {
             total_volume += box.x * box.y * box.z;
             total_number_of_boxes_placed++;
             bin_instances[bin_id].volume += box.x * box.y * box.z;
             bin_instances[bin_id].no_of_boxes_placed++;
-            return 1;
+            return height;
         }
         else
         {
             std::cout << "exception occured" << std::endl;
-            return 0;
+            return -1;
         }
     }
     else
-    {
-        if (bin_instance.update_state(position, {box.y, box.x, box.z}))
+    {   
+        int height=bin_instance.update_state(position, {box.y, box.x, box.z});
+        if (height!=-1)
         {
             total_volume += box.x * box.y * box.z;
             total_number_of_boxes_placed++;
             bin_instances[bin_id].volume += box.x * box.y * box.z;
             bin_instances[bin_id].no_of_boxes_placed++;
-            return 1;
+            return height;
         }
         else
         {
             std::cout << "exception occured" << std::endl;
-            return 0;
+            return -1;
         }
     }
 }

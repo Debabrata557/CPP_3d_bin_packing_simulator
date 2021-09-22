@@ -6,6 +6,7 @@ GenerateBox::GenerateBox()
 }
 GenerateBox::GenerateBox(int seed, std::string algorithm, int number)
 {
+    // generator = std::mt19937(seed);
     generator = std::mt19937(seed);
     cpp_rand = std::uniform_int_distribution<int>(0, 1000);
     max_size = {MAX_BOX_WIDTH, MAX_BOX_LENGTH, MAX_BOX_HEIGHT};

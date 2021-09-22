@@ -1,81 +1,95 @@
 #include "base.h"
 
-class Floor_building_Icp : public Base
+class Floor_Building_Icp : public Base
 {
 private:
     std::pair<int, int> get_action(std::vector<std::pair<vector_3d, vector_3d>> &icpbcp_list, std::vector<std::vector<int>> &state, vector_3d &dim)
     {
         int lx = dim.x, ly = dim.y, lz = dim.z;
-        std::sort(icpbcp_list.begin(), icpbcp_list.end());
+        // std::cout << "before sort" << icpbcp_list.size() << "\n";
+        std::sort(icpbcp_list.begin(), icpbcp_list.end(), comp_floor_building);
+        //std::sort(icpbcp_list.begin(), icpbcp_list.end(), comp_first_fit);
+        // std::cout << "after sort" << icpbcp_list.size() << "\n";
         for (int i = 0; i < icpbcp_list.size(); i++)
         {
             if (check_without_precomputation(state, {icpbcp_list[i].first.x, icpbcp_list[i].first.y}, dim))
             {
-                return {i, 0};
+                auto icp_bcp = icpbcp_list[i];
+                int x_diff = icp_bcp.second.x - icp_bcp.first.x;
+                int y_diff = icp_bcp.second.y - icp_bcp.first.y;
+                int z_diff = icp_bcp.second.z - icp_bcp.first.z;
+
+                if ((x_diff >= lx && y_diff >= ly && z_diff >= lz))
+                {
+                    return {i, 0};
+                }
             }
             if (check_without_precomputation(state, {icpbcp_list[i].first.x, icpbcp_list[i].first.y}, {dim.y, dim.x, dim.z}))
             {
-                return {i, 1};
+                auto icp_bcp = icpbcp_list[i];
+                int x_diff = icp_bcp.second.x - icp_bcp.first.x;
+                int y_diff = icp_bcp.second.y - icp_bcp.first.y;
+                int z_diff = icp_bcp.second.z - icp_bcp.first.z;
+
+                if ((x_diff >= ly && y_diff >= lx && z_diff >= lz))
+                {
+                    return {i, 1};
+                }
             }
         }
         return {-1, 0};
     }
 
 public:
-    int execute()
+    Floor_Building_Icp()
     {
-        double total_volume = 0;
-        int count = 0;
+    }
+    Floor_Building_Icp(GenerateBox gb, Sim &simulator) : Base(gb, simulator)
+    {
+    }
+    bool put_box(Sim &simulator, int bin_id, vector_3d box)
+    {
+        std::vector<std::vector<int>> cur_state = simulator.bin_instances[bin_id].get_state();
+        // bin_instance.print_state();
+        std::vector<std::pair<vector_3d, vector_3d>> &icpbcp_list = simulator.bin_instances[bin_id].get_icbp_list();
+        //precompute_max_min(cur_state);
+        auto idx_ori = get_action(icpbcp_list, cur_state, box);
+
+        // std::cout << idx_ori.first << "\n";
+        if (idx_ori.first >= 0)
+        {
+            return simulator.step(bin_id, idx_ori.first, box, idx_ori.second)!=-1;
+        }
+        else
+        {
+            //std::cout << "could not place the box" << std::endl;
+        }
+        return 0;
+    }
+    performance_metric execute(Sim &simulator, int lookahead)
+    {
+        simulator.size_of_box_stream = boxes.size();
         for (auto box : boxes)
         {
-            std::vector<std::vector<int>> cur_state = simulator.get_state();
-            std::vector<std::pair<vector_3d, vector_3d>> icpbcp_list = simulator.get_icbp_list();
-            //precompute_max_min(cur_state);
-            auto idx_ori = get_action(icpbcp_list, cur_state, box);
-            // std::cout << idx_ori.first << "\n";
-            if (idx_ori.first >= 0)
+            // std::cout << box.x << " " << box.y << " " << box.z << "\n";
+            int flag = 0;
+            for (int i = 0; i < simulator.bin_instances.size(); i++)
             {
-                if (idx_ori.second == 0)
+                if (simulator.bin_instances[i].is_open())
                 {
-                    if (simulator.update_icpbcp_list(idx_ori.first, box) && simulator.update_state({icpbcp_list[idx_ori.first].first.x, icpbcp_list[idx_ori.first].first.y}, box))
+                    if (put_box(simulator, i, box))
                     {
-                        total_volume += box.x * box.y * box.z;
-                    }
-                    else
-                    {
-                        std::cout << "exception occured" << std::endl;
-                        return 0;
+                        flag = 1;
+                        break;
                     }
                 }
-                else
-                {
-                    if (simulator.update_icpbcp_list(idx_ori.first, {box.y, box.x, box.z}) && simulator.update_state({icpbcp_list[idx_ori.first].first.x, icpbcp_list[idx_ori.first].first.y}, {box.y, box.x, box.z}))
-                    {
-                        total_volume += box.x * box.y * box.z;
-                    }
-                    else
-                    {
-                        std::cout << "exception occured" << std::endl;
-                        return 0;
-                    }
-                }
-                //std::cout << "icpbcp_size " << icpbcp_list.size() << "\n";
             }
-            else
+            if (!flag && simulator.open_new_bin())
             {
-                //std::cout << "could not place the box" << std::endl;
+                put_box(simulator, simulator.bin_instances.size() - 1, box);
             }
-
-            // simulator.print_state();
-            // std::cout << "box_passed"
-            //           << " " << box[0] << " " << box[1] << " " << box[2] << " "
-            //           << " "
-            //           << "count: " << count++
-            //           << "\n";
         }
-        double efficiency = total_volume / (double)(BIN_WIDTH * BIN_HEIGHT * BIN_LENGTH);
-        std::cout << "efficiency"
-                  << " " << efficiency << "\n";
-        return 1;
+
+        return simulator.get_performance_metric(1);
     }
 };

@@ -1,158 +1,160 @@
 #include "sim.h"
 
-#include <set>
-
-Sim::Sim(/* args */)
+Sim::Sim()
 {
-    bin_state = std::vector<std::vector<int>>(BIN_WIDTH, std::vector<int>(BIN_LENGTH, 0));
-    icpbcp_list = std::vector<std::pair<vector_3d, vector_3d>>({{{0, 0, 0}, {BIN_WIDTH, BIN_LENGTH, BIN_HEIGHT}}});
+    max_bin_limit = 1;
+    max_open_limit = 1;
+    total_volume=0;
+    cur_open_bins=0;
+    total_number_of_boxes_placed=0;
+    bin_instances=std::vector<Bin>();
+    size_of_box_stream=0;
+
+
 }
 Sim::~Sim()
 {
 }
-int Sim::update_state(std::pair<int, int> start_corner, vector_3d dim)
+int Sim::close_bin()
 {
-    int width = dim.x;
-    int length = dim.y;
-    int height = dim.z;
-    int cur_max_height = -1;
-    int scaled_length = length * SCALING_FACTOR;
-    int scaled_width = width * SCALING_FACTOR;
-    int scaled_height = height * SCALING_FACTOR;
-    try
+    int maximum = INT_MIN;
+    int idx = -1;
+    int n = bin_instances.size();
+    for (int i = 0; i < n; i++)
     {
-        for (int start_x = start_corner.first; start_x <= start_corner.first + scaled_width - 1; start_x++)
+        if (bin_instances[i].is_open() && bin_instances[i].volume > maximum)
         {
-            for (int start_y = start_corner.second; start_y <= start_corner.second + scaled_length - 1; start_y++)
-            {
-                bin_state[start_x][start_y] += scaled_height;
-                cur_max_height = std::max(cur_max_height, bin_state[start_x][start_y]);
-            }
-        }
-        for (int start_x = start_corner.first; start_x <= start_corner.first + scaled_width - 1; start_x++)
-        {
-            for (int start_y = start_corner.second; start_y <= start_corner.second + scaled_length - 1; start_y++)
-            {
-                bin_state[start_x][start_y] = cur_max_height;
-            }
+            idx = i;
+            maximum = bin_instances[i].volume;
         }
     }
-    catch (const std::exception &e)
-    {
-        std::cerr << e.what() << '\n';
-        return 0;
-    }
+    bin_instances[idx].open = false;
+    cur_open_bins--;
+    return idx;
+}
 
+void Sim::update_volume(vector_3d box)
+{
+    total_volume += box.x * box.y * box.z;
+}
+void Sim::set_limits(int bins_limit, int open_bins_limit)
+{
+    max_bin_limit = bins_limit;
+    max_open_limit = open_bins_limit;
+}
+int Sim::open_new_bin()
+{
+    if (bin_instances.size() >= max_bin_limit)
+        return 0;
+    Bin new_bin = Bin();
+    //std::cout<<"binstate";
+    //new_bin.print_state();
+    bin_instances.push_back(new_bin);
+    cur_open_bins++;
+    if (cur_open_bins > max_open_limit)
+    {
+        close_bin();
+    }
     return 1;
 }
-
-bool Sim::is_overlapping(std::pair<vector_3d, vector_3d> icpbcp, vector_3d pos, vector_3d size)
+performance_metric Sim::get_performance_metric(int calculate_open_bin_efficiency)
 {
-    for (int i = 0; i <= 1; i++)
+    int total_volume = 0;
+    int no_of_bins_used = 0;
+    int no_of_boxes_put = 0;
+    for (int i = 0; i < bin_instances.size(); i++)
     {
-        for (int j = 0; j <= 1; j++)
-        {
-            for (int k = 0; k <= 1; k++)
-            {
-                int cur_x = pos.x + i * size.x;
-                int cur_y = pos.y + j * size.y;
-                int cur_z = pos.z + k * size.z;
-                if (cur_x > icpbcp.first.x && cur_x < icpbcp.second.x && cur_y > icpbcp.first.y && cur_y < icpbcp.second.y && cur_z > icpbcp.first.z && cur_z < icpbcp.second.z)
-                {
-                    return true;
-                }
-            }
+        if (calculate_open_bin_efficiency || !bin_instances[i].is_open()) {
+            total_volume += bin_instances[i].volume;
+            no_of_bins_used++;
+            no_of_boxes_put += bin_instances[i].no_of_boxes_placed;
         }
     }
-    return false;
+    double efficiency = total_volume / (double)(no_of_bins_used * BIN_WIDTH * BIN_HEIGHT * BIN_LENGTH);
+    //std::cout<<efficiency<<" "<<total_volume<<" "<<no_of_bins_used<<" "<< no_of_boxes_put<<" "<<size_of_box_stream<<std::endl;
+    performance_metric pm;
+    pm.total_number_of_boxes = size_of_box_stream;
+    pm.efficiency = efficiency;
+    pm.number_of_bins_used = no_of_bins_used;
+    pm.number_of_boxes_successfully_put = no_of_boxes_put;
+    return pm;
 }
 
-int Sim::update_icpbcp_list(int icpbcp_idx, vector_3d dim)
+int Sim::step(int bin_id, int icp_bcp_list_id, vector_3d box, int orientation)
 {
-    try
+    auto icp_bcp_list = bin_instances[bin_id].get_icbp_list();
+    if (orientation == 0)
     {
-        vector_3d pos = icpbcp_list[icpbcp_idx].first;
-        int x_o = pos.x;
-        int y_o = pos.y;
-        int z_o = pos.z;
-
-        int w_o = dim.x;
-        int l_o = dim.y;
-        int h_o = dim.z;
-        std::set<std::pair<vector_3d, vector_3d>> icpbcp_st;
-        std::vector<std::pair<vector_3d, vector_3d>> temp_icpbcp_list;
-
-        for (auto icpbcp : icpbcp_list)
+        auto pos=icp_bcp_list[icp_bcp_list_id].first;
+        int height=bin_instances[bin_id].update_state({pos.x, pos.y}, box);
+        if ( height!=-1 && bin_instances[bin_id].update_icpbcp_list({pos.x, pos.y, height}, box)!=-1)
         {
-            int x_c1 = icpbcp.first.x;
-            int y_c1 = icpbcp.first.y;
-            int z_c1 = icpbcp.first.z;
-            int x_c2 = icpbcp.second.x;
-            int y_c2 = icpbcp.second.y;
-            int z_c2 = icpbcp.second.z;
-            if (is_overlapping(icpbcp, pos, dim))
-            {
-                if (x_o > x_c1)
-                {
-                    icpbcp_st.insert({{x_c1, y_c1, z_c1}, {x_o, y_c2, z_c2}});
-                }
-                if (x_o + w_o < x_c2)
-                {
-                    icpbcp_st.insert({{x_o + w_o, y_c1, z_c1}, {x_c2, y_c2, z_c2}});
-                }
-                if (y_o > y_c1)
-                {
-                    icpbcp_st.insert({{x_c1, y_c1, z_c1}, {x_c2, y_o, z_c2}});
-                }
-                if (y_o + l_o < y_c2)
-                {
-                    icpbcp_st.insert({{x_c1, y_o + l_o, z_c1}, {x_c2, y_c2, z_c2}});
-                }
-                if (z_o > z_c1)
-                {
-                    icpbcp_st.insert({{x_c1, y_c1, z_c1}, {x_c2, y_c2, z_o}});
-                }
-                if (z_o + h_o < z_c2)
-                {
-                    icpbcp_st.insert({{x_c1, y_c1, z_o + h_o}, {x_c2, y_c2, z_c2}});
-                }
-            }
-            else
-            {
-                temp_icpbcp_list.push_back(icpbcp);
-            }
+            total_volume += box.x * box.y * box.z;
+            total_number_of_boxes_placed++;
+            bin_instances[bin_id].volume += box.x * box.y * box.z;
+            bin_instances[bin_id].no_of_boxes_placed++;
+            return height;
         }
-        icpbcp_list.clear();
-        icpbcp_list = temp_icpbcp_list;
-        for (auto it : icpbcp_st)
+        else
         {
-            icpbcp_list.push_back(it);
+            std::cout << "exception occured in step" << std::endl;
+            return -1;
         }
     }
-    catch (const std::exception &e)
+    else
     {
-        std::cerr << e.what() << '\n';
-        return 0;
-    }
-
-    return 1;
-}
-void Sim::print_state()
-{
-    for (int i = 0; i < BIN_WIDTH; i++)
-    {
-        for (int j = 0; j < BIN_LENGTH; j++)
+        auto pos=icp_bcp_list[icp_bcp_list_id].first;
+        int height=bin_instances[bin_id].update_state({pos.x, pos.y}, {box.y, box.x, box.z});
+        if (height!=-1 && bin_instances[bin_id].update_icpbcp_list({pos.x, pos.y, height}, {box.y, box.x, box.z})!=-1)
         {
-            std::cout << bin_state[i][j] << " ";
+            total_volume += box.x * box.y * box.z;
+            total_number_of_boxes_placed++;
+            bin_instances[bin_id].volume += box.x * box.y * box.z;
+            bin_instances[bin_id].no_of_boxes_placed++;
+            return height;
         }
-        std::cout << std::endl;
+        else
+        {
+            std::cout << "exception occured in step" << std::endl;
+            return -1;
+        }
     }
 }
-std::vector<std::vector<int>> Sim::get_state()
+int Sim::step(int bin_id, std::pair<int, int> position, vector_3d box, int orientation)
 {
-    return bin_state;
-}
-std::vector<std::pair<vector_3d, vector_3d>> Sim::get_icbp_list()
-{
-    return icpbcp_list;
+    auto &bin_instance = bin_instances[bin_id];
+    if (orientation == 0)
+    {
+        int height=bin_instance.update_state(position, box);
+        if (height!=-1)
+        {
+            total_volume += box.x * box.y * box.z;
+            total_number_of_boxes_placed++;
+            bin_instances[bin_id].volume += box.x * box.y * box.z;
+            bin_instances[bin_id].no_of_boxes_placed++;
+            return height;
+        }
+        else
+        {
+            std::cout << "exception occured" << std::endl;
+            return -1;
+        }
+    }
+    else
+    {   
+        int height=bin_instance.update_state(position, {box.y, box.x, box.z});
+        if (height!=-1)
+        {
+            total_volume += box.x * box.y * box.z;
+            total_number_of_boxes_placed++;
+            bin_instances[bin_id].volume += box.x * box.y * box.z;
+            bin_instances[bin_id].no_of_boxes_placed++;
+            return height;
+        }
+        else
+        {
+            std::cout << "exception occured" << std::endl;
+            return -1;
+        }
+    }
 }

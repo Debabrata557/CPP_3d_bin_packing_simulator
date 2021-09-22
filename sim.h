@@ -1,7 +1,8 @@
 #include <iostream>
 #include <vector>
-
+#include <climits>
 #include "config.h"
+#include "bin.h"
 
 #ifndef sim
 #define sim
@@ -11,18 +12,24 @@
 class Sim
 {
 private:
-    std::vector<std::vector<int>> bin_state;
-    std::vector<std::pair<vector_3d, vector_3d>> icpbcp_list;
-    bool is_overlapping(std::pair<vector_3d, vector_3d> icpbcp, vector_3d size, vector_3d pos);
+    long long total_volume;
+    int max_bin_limit;
+    int max_open_limit;
+    int cur_open_bins;
 
 public:
-    Sim(/* args */);
+    Sim();
     ~Sim();
-    int update_state(std::pair<int, int> start_corner, vector_3d dim);
-    int update_icpbcp_list(int icpbcp_idx, vector_3d dim);
-    void print_state();
-    std::vector<std::vector<int>> get_state();
-    std::vector<std::pair<vector_3d, vector_3d>> get_icbp_list();
+    int total_number_of_boxes_placed;
+    std::vector<Bin> bin_instances;
+    int size_of_box_stream;
+    int close_bin();
+    void update_volume(vector_3d box);
+    int open_new_bin();
+    void set_limits(int bins_limit, int open_bins_limit);
+    int step(int bin_id, int icp_bcp_list_id, vector_3d box, int orientation);
+    int step(int bin_id, std::pair<int, int> position, vector_3d box, int orientation);
+    performance_metric get_performance_metric(int calculate_open_bin_efficiency=0);
 };
 
 #endif

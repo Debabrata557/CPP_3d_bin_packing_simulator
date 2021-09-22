@@ -49,57 +49,50 @@ public:
         pre_computed_max = std::vector<std::vector<std::vector<std::vector<int>>>>(BIN_WIDTH + 1, std::vector<std::vector<std::vector<int>>>(BIN_LENGTH + 1, std::vector<std::vector<int>>(10, std::vector<int>(10))));
         pre_computed_min = std::vector<std::vector<std::vector<std::vector<int>>>>(BIN_WIDTH + 1, std::vector<std::vector<std::vector<int>>>(BIN_LENGTH + 1, std::vector<std::vector<int>>(10, std::vector<int>(10))));
     }
-    int execute()
+    Floor_Building(GenerateBox gb, Sim &simulator) : Base(gb, simulator)
     {
-        double total_volume = 0;
-        int count = 0;
+        pre_computed_max = std::vector<std::vector<std::vector<std::vector<int>>>>(BIN_WIDTH + 1, std::vector<std::vector<std::vector<int>>>(BIN_LENGTH + 1, std::vector<std::vector<int>>(10, std::vector<int>(10))));
+        pre_computed_min = std::vector<std::vector<std::vector<std::vector<int>>>>(BIN_WIDTH + 1, std::vector<std::vector<std::vector<int>>>(BIN_LENGTH + 1, std::vector<std::vector<int>>(10, std::vector<int>(10))));
+    }
+    bool put_box(Sim &simulator, int bin_id, vector_3d box)
+    {
+        std::vector<std::vector<int>> cur_state = simulator.bin_instances[bin_id].get_state();
+        precompute_max_min(cur_state);
+        std::vector<int> pose = get_action(cur_state, box);
+        if (pose[0] >= 0)
+        {
+            return simulator.step(bin_id, {pose[0], pose[1]}, box, pose[2])!=-1;
+        }
+        else
+        {
+            //a  std::cout << "could not place the box" << std::endl;
+        }
+        return 0;
+    }
+    performance_metric execute(Sim &simulator, int max_bin_limit, int max_open_bins)
+    {
+        simulator.size_of_box_stream = boxes.size();
         for (auto box : boxes)
         {
-            std::vector<std::vector<int>> cur_state = simulator.get_state();
-            precompute_max_min(cur_state);
-            std::vector<int> pose = get_action(cur_state, box);
-            if (pose[0] >= 0)
+            // std::cout << box.x << " " << box.y << " " << box.z << "\n";
+            int flag = 0;
+            for (int i = 0; i < simulator.bin_instances.size(); i++)
             {
-                if (pose[2] == 0)
+                if (simulator.bin_instances[i].is_open())
                 {
-                    if (simulator.update_state({pose[0], pose[1]}, box))
+                    if (put_box(simulator, i, box))
                     {
-                        total_volume += box.x * box.y * box.z;
-                    }
-                    else
-                    {
-                        std::cout << "exception occured" << std::endl;
-                        return 0;
-                    }
-                }
-                else
-                {
-                    if (simulator.update_state({pose[0], pose[1]}, {box.y, box.x, box.z}))
-                    {
-                        total_volume += box.x * box.y * box.z;
-                    }
-                    else
-                    {
-                        std::cout << "exception occured" << std::endl;
-                        return 0;
+                        flag = 1;
+                        break;
                     }
                 }
             }
-            else
+            if (!flag && simulator.open_new_bin())
             {
-                //a  std::cout << "could not place the box" << std::endl;
+                put_box(simulator, simulator.bin_instances.size() - 1, box);
             }
-
-            // simulator.print_state();
-            // std::cout << "box_passed"
-            //           << " " << box[0] << " " << box[1] << " " << box[2] << " "
-            //           << " "
-            //           << "count: " << count++
-            //           << "\n";
         }
-        double efficiency = total_volume / (double)(BIN_WIDTH * BIN_HEIGHT * BIN_LENGTH);
-        std::cout << "efficiency"
-                  << " " << efficiency << "\n";
-        return 1;
+
+        return simulator.get_performance_metric();
     }
 };

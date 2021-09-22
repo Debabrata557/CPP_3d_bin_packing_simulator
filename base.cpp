@@ -1,7 +1,5 @@
 #include "base.h"
 
-GenerateBox gb;
-Sim simulator;
 std::vector<vector_3d> boxes;
 std::vector<std::vector<std::vector<std::vector<int>>>> pre_computed_max;
 std::vector<std::vector<std::vector<std::vector<int>>>> pre_computed_min;
@@ -51,16 +49,14 @@ void Base::precompute_max_min(const std::vector<std::vector<int>> &state)
         }
     }
 }
-
 Base::Base()
 {
-    int debug = 0;
-    gb = GenerateBox();
-    simulator = Sim();
-    if (gb.generate_cut1())
-    {
-        boxes = gb.get_stream_of_boxes();
-    }
+}
+Base::Base(GenerateBox gb, Sim &simulator)
+{
+    this->gb = gb;
+    //this->simulator = simulator;
+    boxes = gb.get_stream_of_boxes();
 }
 Base::~Base()
 {

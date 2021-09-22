@@ -30,8 +30,10 @@ performance_metric worker(int seed)//episode number is seed
     // Base *x = new First_Fit_Icp(gb, simulator);
     // Base *x = new Floor_Building_Icp(gb, bin_instances);
     // Base *x = new Floor_Building(gb, bin_instances);
-    int NPARAMS_X = (BIN_WIDTH+STRIDE-1)/STRIDE;
-    int NPARAMS_Y = (BIN_LENGTH+STRIDE-1)/STRIDE;
+    // int NPARAMS_X = (BIN_WIDTH+STRIDE-1)/STRIDE;
+    // int NPARAMS_Y = (BIN_LENGTH+STRIDE-1)/STRIDE;
+    int NPARAMS_X = ((BIN_WIDTH/2) + STRIDE - 1) / STRIDE;
+    int NPARAMS_Y = ((BIN_LENGTH/2) + STRIDE - 1) / STRIDE;
     // int NPARAMS_X = (EXTRACT_FEATURE_AREA+STRIDE-1)/STRIDE;
     // int NPARAMS_Y = (EXTRACT_FEATURE_AREA+STRIDE-1)/STRIDE;
     int NPARAMS = 3*NPARAMS_X*NPARAMS_Y+1+1+1;  /// this should be integer.Discreteization factor must be a factor of BIN_WIDTH and BIN_LENGTH

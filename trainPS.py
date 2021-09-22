@@ -72,14 +72,18 @@ if __name__ == '__main__':
     FILTER_SIZE = 10
     STRIDE = 10
     EXTRACT_FEATURE_AREA=70
-    NPARAMS_X = (120+STRIDE-1)//STRIDE
-    NPARAMS_Y = (180+STRIDE-1)//STRIDE
+    BIN_WIDTH=120
+    BIN_LENGTH=180
+    # NPARAMS_X = (120+STRIDE-1)//STRIDE
+    # NPARAMS_Y = (180+STRIDE-1)//STRIDE
+    NPARAMS_X = ((BIN_WIDTH//2) + STRIDE - 1) // STRIDE
+    NPARAMS_Y = ((BIN_LENGTH//2) + STRIDE - 1) // STRIDE
     # NPARAMS_X = (EXTRACT_FEATURE_AREA+STRIDE-1)//STRIDE
     # NPARAMS_Y = (EXTRACT_FEATURE_AREA+STRIDE-1)//STRIDE
     NPARAMS = 3*NPARAMS_X*NPARAMS_Y+1+1+1
     # print('Number of parameters:', NPARAMS)
     directory = "test_dir"
-    NPOPULATION = 50
+    NPOPULATION = 1000
     MAXITER = 35
     def save_weights_to_file(weights, filename):
          with open(filename,"w") as f:

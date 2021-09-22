@@ -43,8 +43,9 @@ class Smart_Algorithm : public Base {
                     temp_bin.update_state({icpbcp_list[i].first.x, icpbcp_list[i].first.y}, dim);
                     eval_feature x;
                     x.holes = holes;
-                    std::vector<double> features = extract_state_features(temp_bin, x, dim, icpbcp_list[i].first.x, icpbcp_list[i].first.y);
-                    double temp_max = evaluate(features);
+                    std::vector<double> features = extract_state_features_with_symmetry(temp_bin, x, dim, icpbcp_list[i].first.x, icpbcp_list[i].first.y);
+                    // double temp_max = evaluate(features);
+                    double temp_max = evaluate_with_symmetry(features);
                     if(temp_max > max_score){
                         idx = i;
                         max_score = temp_max;
@@ -64,8 +65,9 @@ class Smart_Algorithm : public Base {
                     temp_bin.update_state({icpbcp_list[i].first.x, icpbcp_list[i].first.y}, rotated_dim);
                     eval_feature x;
                     x.holes=holes;
-                    std::vector<double> features = extract_state_features(temp_bin, x, rotated_dim, icpbcp_list[i].first.x, icpbcp_list[i].first.y);
-                    double temp_max = evaluate(features);
+                    std::vector<double> features = extract_state_features_with_symmetry(temp_bin, x, rotated_dim, icpbcp_list[i].first.x, icpbcp_list[i].first.y);
+                    // double temp_max = evaluate(features);
+                    double temp_max = evaluate_with_symmetry(features);
                     if (temp_max > max_score) {
                         idx = i;
                         max_score = temp_max;
@@ -110,23 +112,129 @@ class Smart_Algorithm : public Base {
         // std::cout<<sum<<"\n";
         return sum;
     }
+    int evaluate_with_symmetry(std::vector<double> &features) {
+        double sum = 0;
+        //assert params.size()==features.size();
+        int j=0;
+        for (int i = 0; i < params.size()-3; i++,j++) {
+            sum += features[j] * params[i];
+        }
+        for (int i = 0; i < params.size()-3; i++,j++) {
+            sum += features[j] * params[i];
+        }
+        for (int i = 0; i < params.size()-3; i++, j++) {
+            sum += features[j] * params[i];
+        }
+        for (int i = 0; i < params.size()-3; i++, j++) {
+            sum += features[j] * params[i];
+        }
+        
+        for(int i=3;i>=1;i--,j++){
+            sum+=features[j]*params[(int)params.size()-i];
+        }
+        // std::cout<<sum<<"\n";
+        return sum;
+    }
 
-    void extract_pool_features(std::vector<std::vector<int>>&after_state,eval_feature  &x,int stride,int filter_size){
-        for (int i = 0; i < BIN_WIDTH / stride; i++) {
-            for (int j = 0; j < BIN_LENGTH / stride; j++) {
+    void extract_pool_features(std::vector<std::vector<int>> &after_state, int start_x, int end_x, int start_y, int end_y, eval_feature &x, int stride, int filter_size) {
+        for (int i = start_x; i < end_x; i += stride) {
+            for (int j = start_y; j < end_y; j += stride) {
                 int temp_max = 0;
                 int temp_min = 0;
                 double mean_height = 0;
-                for (int inner_cell_x = i * stride; inner_cell_x < i * stride + filter_size; inner_cell_x++) {
-                    for (int inner_cell_y = j * stride; inner_cell_y < j * stride + filter_size; inner_cell_y++) {
-                        temp_max = std::max(temp_max, after_state[inner_cell_x][inner_cell_y]);
-                        temp_min = std::min(temp_min, after_state[inner_cell_x][inner_cell_y]);
-                        mean_height += after_state[inner_cell_x][inner_cell_y];
+                int cell_count = 0;
+                for (int inner_i = i; inner_i <= std::min(i + filter_size - 1, end_x); inner_i++) {
+                    for (int inner_j = j; inner_j <= std::min(j + filter_size - 1, end_y); inner_j++) {
+                        temp_max = std::max(temp_max, after_state[inner_i][inner_j]);
+                        temp_min = std::min(temp_min, after_state[inner_i][inner_j]);
+                        mean_height += after_state[inner_i][inner_j];
+                        cell_count++;
                     }
                 }
                 x.max_pool.push_back(temp_max);
                 x.min_pool.push_back(temp_min);
-                x.avg_pool.push_back(mean_height / (filter_size * filter_size));
+                x.avg_pool.push_back(mean_height / cell_count);
+            }
+        }
+    }
+
+    void extract_pool_features_with_symmetry(std::vector<std::vector<int>> &after_state, int start_x, int end_x, int start_y, int end_y, eval_feature &x, int stride, int filter_size) {
+        
+        
+        for (int i = start_x; i < end_x/2; i += stride) {
+            for (int j = start_y; j < end_y/2; j += stride) {
+                int temp_max = 0;
+                int temp_min = 0;
+                double mean_height = 0;
+                int cell_count = 0;
+                for (int inner_i = i; inner_i <= std::min(i + filter_size - 1, end_x/2); inner_i++) {
+                    for (int inner_j = j; inner_j <= std::min(j + filter_size - 1, end_y/2); inner_j++) {
+                        temp_max = std::max(temp_max, after_state[inner_i][inner_j]);
+                        temp_min = std::min(temp_min, after_state[inner_i][inner_j]);
+                        mean_height += after_state[inner_i][inner_j];
+                        cell_count++;
+                    }
+                }
+                x.max_pool.push_back(temp_max);
+                x.min_pool.push_back(temp_min);
+                x.avg_pool.push_back(mean_height / cell_count);
+            }
+        }
+        for (int i = start_x;i < end_x / 2; i += stride) {
+            for (int j = end_y-1; j >= end_y / 2; j -= stride) {
+                int temp_max = 0;
+                int temp_min = 0;
+                double mean_height = 0;
+                int cell_count = 0;
+                for (int inner_i = i; inner_i <= std::min(i + filter_size - 1, end_x); inner_i++) {
+                    for (int inner_j = j; inner_j >= std::max(j - filter_size + 1, end_y/2); inner_j--) {
+                        temp_max = std::max(temp_max, after_state[inner_i][inner_j]);
+                        temp_min = std::min(temp_min, after_state[inner_i][inner_j]);
+                        mean_height += after_state[inner_i][inner_j];
+                        cell_count++;
+                    }
+                }
+                x.max_pool.push_back(temp_max);
+                x.min_pool.push_back(temp_min);
+                x.avg_pool.push_back(mean_height / cell_count);
+            }
+        }
+        for (int i = end_x-1; i >= end_x / 2; i -= stride) {
+            for (int j = start_y; j < end_y / 2; j += stride) {
+                int temp_max = 0;
+                int temp_min = 0;
+                double mean_height = 0;
+                int cell_count = 0;
+                for (int inner_i = i; inner_i >= std::max(i - filter_size + 1, end_x / 2); inner_i--) {
+                    for (int inner_j = j; inner_j <= std::min(j + filter_size - 1, end_y / 2); inner_j++) {
+                        temp_max = std::max(temp_max, after_state[inner_i][inner_j]);
+                        temp_min = std::min(temp_min, after_state[inner_i][inner_j]);
+                        mean_height += after_state[inner_i][inner_j];
+                        cell_count++;
+                    }
+                }
+                x.max_pool.push_back(temp_max);
+                x.min_pool.push_back(temp_min);
+                x.avg_pool.push_back(mean_height / cell_count);
+            }
+        }
+        for (int i = end_x - 1; i >= end_x / 2; i -= stride) {
+            for (int j = end_y-1; j >= end_y / 2; j -= stride) {
+                int temp_max = 0;
+                int temp_min = 0;
+                double mean_height = 0;
+                int cell_count = 0;
+                for (int inner_i = i; inner_i >= std::max(i - filter_size + 1, end_x / 2); inner_i--) {
+                    for (int inner_j = j; inner_j >= std::max(j - filter_size + 1, end_y / 2); inner_j--) {
+                        temp_max = std::max(temp_max, after_state[inner_i][inner_j]);
+                        temp_min = std::min(temp_min, after_state[inner_i][inner_j]);
+                        mean_height += after_state[inner_i][inner_j];
+                        cell_count++;
+                    }
+                }
+                x.max_pool.push_back(temp_max);
+                x.min_pool.push_back(temp_min);
+                x.avg_pool.push_back(mean_height / cell_count);
             }
         }
     }
@@ -154,7 +262,13 @@ class Smart_Algorithm : public Base {
     std::vector<double> extract_state_features(Bin cur_bin, eval_feature &x, vector_3d &dim, int pos_x, int pos_y) {
         auto cur_state = cur_bin.get_state();
         std::vector<double>features;
-        extract_pool_features(cur_state,x,STRIDE,FILTER_SIZE);
+        int start_x = 0;
+        int start_y = 0;
+        int end_x = BIN_WIDTH;
+        int end_y = BIN_LENGTH;
+        // extract_pool_features_with_symmetry(cur_state,start_x,end_x,start_y,end_y,x,STRIDE,FILTER_SIZE);
+        extract_pool_features(cur_state, start_x, end_x, start_y, end_y, x, STRIDE, FILTER_SIZE);
+
         extract_border_feature(cur_state, dim, pos_x, pos_y, x);
         for(int i:x.max_pool){
             features.push_back(i*1.0/BIN_HEIGHT);
@@ -168,6 +282,39 @@ class Smart_Algorithm : public Base {
         features.push_back(x.holes/(0.5*BIN_HEIGHT*BIN_LENGTH*BIN_WIDTH));
         double max_border_feature_val=2.0*(MAX_BOX_LENGTH+MAX_BOX_WIDTH)*BIN_HEIGHT;
         features.push_back(x.border_diff_height/max_border_feature_val);
+        features.push_back(1);
+        return features;
+    }
+
+    std::vector<double> extract_state_features_with_symmetry(Bin cur_bin, eval_feature &x, vector_3d &dim, int pos_x, int pos_y) {
+        auto cur_state = cur_bin.get_state();
+        std::vector<double> features;
+        int start_x = 0;
+        int start_y = 0;
+        int end_x = BIN_WIDTH;
+        int end_y = BIN_LENGTH;
+        extract_pool_features_with_symmetry(cur_state,start_x,end_x,start_y,end_y,x,STRIDE,FILTER_SIZE);
+        // extract_pool_features(cur_state, start_x, end_x, start_y, end_y, x, STRIDE, FILTER_SIZE);
+
+        extract_border_feature(cur_state, dim, pos_x, pos_y, x);
+        int max_pool_idx=0,min_pool_idx=0,avg_pool_idx=0;
+        for(int i=0;i<4;i++){
+            for(int j=0;j<x.max_pool.size()/4;j++,max_pool_idx++){
+                features.push_back(x.max_pool[max_pool_idx] * 1.0 / BIN_HEIGHT);
+            }
+            for (int j = 0; j < x.min_pool.size() / 4; j++,min_pool_idx++) {
+                features.push_back(x.min_pool[min_pool_idx] * 1.0 / BIN_HEIGHT);
+            }
+
+            for (int j = 0; j < x.avg_pool.size() / 4; j++,avg_pool_idx++) {
+                features.push_back(x.avg_pool[avg_pool_idx] * 1.0 / BIN_HEIGHT);
+            }
+            
+        }
+
+        features.push_back(x.holes / (0.5 * BIN_HEIGHT * BIN_LENGTH * BIN_WIDTH));
+        double max_border_feature_val = 2.0 * (MAX_BOX_LENGTH + MAX_BOX_WIDTH) * BIN_HEIGHT;
+        features.push_back(x.border_diff_height / max_border_feature_val);
         features.push_back(1);
         return features;
     }

@@ -5,7 +5,7 @@
 #define config
 const int DEBUG = 0;
 const int BIN_WIDTH = 120; //x
-const int BIN_HEIGHT = 360;
+const int BIN_HEIGHT = 120;
 const int BIN_LENGTH = 180; //y
 const int MAX_BOX_LENGTH = 60;
 const int MAX_BOX_WIDTH = 60;

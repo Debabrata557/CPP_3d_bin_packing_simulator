@@ -96,7 +96,7 @@ class Smart_Algorithm : public Base {
         // std::cout << idx_ori.first << "\n";
         if (idx_ori.first >= 0) {
             int height=simulator.step(bin_id, idx_ori.first, box, idx_ori.second);
-            write_file<<box.x<<" "<<box.y<<" "<<box.z<<" "<<icp_bcp.x<<" "<<icp_bcp.y<<" "<<height<<" "<<idx_ori.second<<"\n"; 
+            write_file<<bin_id<<" "<<box.x<<" "<<box.y<<" "<<box.z<<" "<<icp_bcp.x<<" "<<icp_bcp.y<<" "<<height<<" "<<idx_ori.second<<"\n"; 
             return height!=-1;
         } else {
             //std::cout << "could not place the box" << std::endl;
@@ -114,22 +114,23 @@ class Smart_Algorithm : public Base {
     }
     int evaluate_with_symmetry(std::vector<double> &features) {
         double sum = 0;
+        int extra_feature=3;
         //assert params.size()==features.size();
         int j=0;
-        for (int i = 0; i < params.size()-3; i++,j++) {
+        for (int i = 0; i < params.size()-extra_feature; i++,j++) {
             sum += features[j] * params[i];
         }
-        for (int i = 0; i < params.size()-3; i++,j++) {
+        for (int i = 0; i < params.size()-extra_feature; i++,j++) {
             sum += features[j] * params[i];
         }
-        for (int i = 0; i < params.size()-3; i++, j++) {
+        for (int i = 0; i < params.size()-extra_feature; i++, j++) {
             sum += features[j] * params[i];
         }
-        for (int i = 0; i < params.size()-3; i++, j++) {
+        for (int i = 0; i < params.size()-extra_feature; i++, j++) {
             sum += features[j] * params[i];
         }
         
-        for(int i=3;i>=1;i--,j++){
+        for(int i=extra_feature;i>=1;i--,j++){
             sum+=features[j]*params[(int)params.size()-i];
         }
         // std::cout<<sum<<"\n";

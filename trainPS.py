@@ -10,6 +10,7 @@ from es import CMAES, PEPG, OpenES
 from distributed import Client, progress
 import subprocess
 import pickle
+np.random.seed(0)
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -69,8 +70,8 @@ if __name__ == '__main__':
 
     # NUM_SIMULATIONS = args['num_simulations']
     client = Client()
-    FILTER_SIZE = 10
-    STRIDE = 10
+    FILTER_SIZE = 20
+    STRIDE = 20
     EXTRACT_FEATURE_AREA=70
     BIN_WIDTH=120
     BIN_LENGTH=180
@@ -83,8 +84,8 @@ if __name__ == '__main__':
     NPARAMS = 3*NPARAMS_X*NPARAMS_Y+1+1+1
     # print('Number of parameters:', NPARAMS)
     directory = "test_dir"
-    NPOPULATION = 1000
-    MAXITER = 35
+    NPOPULATION = 25
+    MAXITER = 100000
     def save_weights_to_file(weights, filename):
          with open(filename,"w") as f:
             for w in weights:
@@ -102,7 +103,7 @@ if __name__ == '__main__':
         # sigmas=[]
         # best_result_obj1 = float('inf')
         # best_result_cur_obj = float('inf')
-
+        file = open('test_results.txt','w')
         for j in range(MAXITER):
             tic1 = time.time()
             solutions = solver.ask()
@@ -144,7 +145,10 @@ if __name__ == '__main__':
 				]
 
             # _row = pretty_format_row(row)
+            print('train result: ')
             print(row)
+            run_test(solver, file)
+        file.close()
             # history.append(row)
 
             # if j%100 == 0:
@@ -164,6 +168,49 @@ if __name__ == '__main__':
 
         # with open(f'{directory}/solver', 'wb') as solver_file:
                 # pickle.dump(solver, solver_file)
+    def run_test(solver, file):
+        test_episode=30
+        tic1 = time.time()
+        solutions = [solver.current_param()]*test_episode
+
+        fitness_list_futures = []
+        seed = np.random.randint(0,1000)
+        #seed=0
+        fitness_list_futures.append(
+                        client.map(
+                            fit_func,
+                            [seed+x for x in range(test_episode)],
+                            solutions,
+                            [x for x in range(test_episode)],
+                            pure=False
+                        )
+                    )
+
+        progress(fitness_list_futures)
+        results = client.gather(fitness_list_futures)
+        del fitness_list_futures
+        tac1 = time.time()
+        effs = [r["eff"] for r in results[0]]
+        boxes_put = [r["boxes_put"] for r in results[0]]
+        genTime = [r["genTime"] for r in results[0]]
+
+        row = [
+                str(np.min(effs)),
+                str(np.mean(effs)),
+                str(np.max(effs)),
+                str(solver.es.sigma),
+                str(np.min(boxes_put)),
+                str(np.mean(boxes_put)),
+                str(np.max(boxes_put)),
+                str(np.mean(genTime)),
+                str((tac1-tic1)*1000)
+            ]
+
+
+        file.write(str(np.mean(effs))+'\n')
+        # _row = pretty_format_row(row)
+        print('test results: ')
+        print(row)
 
     def run_simulation(seed,weights=None, gen=None):
         filename_in = f'{directory}/weights_{gen}.txt'
@@ -217,7 +264,7 @@ if __name__ == '__main__':
     run_solver(solver)
 
     # for i in range(NPOPULATION):
-    #     os.remove(f'{directory}/weights_{i}.txt')
+    #     os.remove(f'{directoryweights}/weights_{i}.txt')
     #     os.remove(f'{directory}/result_{i}.txt')
 
     # run_test("")

@@ -1,43 +1,22 @@
-output: sim.o base.o random_algorithm.o smart_algorithm2.o smart_algorithm.o first_fit.o first_fit_icp.o config.o helper.o bin.o generate_box.o run.o
-	g++ -g sim.o base.o random_algorithm.o smart_algorithm2.o smart_algorithm.o first_fit.o first_fit_icp.o config.o helper.o bin.o generate_box.o run.o -o run -pthread
+CFLAGS:=-g -Wno-unused-value -pthread -Wall
+CC:=g++
+DIR=build
+OBJECTS1 := $(addprefix $(DIR)/,sim.o base.o smart_algo_withlookahead.o random_algorithm.o smart_algorithm2.o smart_algorithm.o first_fit.o first_fit_icp.o config.o helper.o bin.o generate_box.o run.o)
+output: $(OBJECTS1)
+	$(CC) $(CFLAGS) $(OBJECTS1) -o $(DIR)/run -pthread
 
-first_fit.o: first_fit.cpp
-	g++ -c -g first_fit.cpp
+$(DIR)/run.o: run.cpp sim.h generate_box.h
+	$(CC) -c -g run.cpp -o $@
 
-first_fit_icp.o: first_fit_icp.cpp
-	g++ -c -g first_fit_icp.cpp
+$(DIR)/%.o: %.cpp %.h
+	mkdir -p $(DIR);
+	$(CC) -c -g $< -o $@
 
-smart_algorithm.o: smart_algorithm.cpp
-	g++ -c -g smart_algorithm.cpp
+$(DIR)/%.o: %.cpp
+	mkdir -p $(DIR);
+	$(CC) -c -g $< -o $@
 
-random_algorithm.o: random_algorithm.cpp
-	g++ -c -g random_algorithm.cpp
-
-smart_algorithm2.o: smart_algorithm2.cpp
-	g++ -c -g smart_algorithm2.cpp
-
-base.o: base.cpp
-	g++ -c -g base.cpp
-	
-config.o: config.cpp config.h
-	g++ -c -g config.cpp
-
-helper.o: helper.cpp helper.h
-	g++ -c -g helper.cpp
-
-sim.o: sim.cpp sim.h
-	g++ -c -g sim.cpp
-
-bin.o: bin.cpp bin.h
-	g++ -c -g bin.cpp
-
-generate_box.o: generate_box.cpp generate_box.h
-	g++ -c -g generate_box.cpp
-
-run.o: run.cpp sim.h generate_box.h
-	g++ -c -g run.cpp
-
-clean:
-	rm *.o run *.gch
+all clean:
+	@rm -rf $(DIR)
 target: dependencies
 	action

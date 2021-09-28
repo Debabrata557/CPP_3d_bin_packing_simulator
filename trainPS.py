@@ -216,7 +216,7 @@ if __name__ == '__main__':
         filename_in = f'{directory}/weights_{gen}.txt'
         filename_out = f'{directory}/result_{gen}.txt'
         save_weights_to_file(weights,filename_in)
-        return run_subproccess(['./run',filename_in,filename_out,str(seed)])
+        return run_subproccess(['./build/run',filename_in,filename_out,str(seed)])
 
 
     # if args['test']:
@@ -253,7 +253,7 @@ if __name__ == '__main__':
     solver = CMAES(
             NPARAMS,
             popsize=NPOPULATION,
-            weight_decay=0.0,
+            weight_decay=0.001,
             sigma_init=0.5,
             initial_weights=weights
         )

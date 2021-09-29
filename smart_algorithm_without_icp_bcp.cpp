@@ -8,7 +8,7 @@ Take features from the complete state.
 #include <fstream>
 #include "base.h"
 
-class Smart_Algorithm_WithLookahead : public Base {
+class Smart_Algorithm_WithoutICP_BCP: public Base {
    private:
    std::ofstream write_file;
    std::string write_file_name = "details.txt";
@@ -23,81 +23,72 @@ class Smart_Algorithm_WithLookahead : public Base {
         }
         return holes;
     }
-    std::pair<int, int> get_action(Bin &cur_bin, vector_3d &dim, double &after_state_score) {
-        auto icpbcp_list = cur_bin.get_icbp_list();
-        auto cur_state = cur_bin.get_state();
+    vector_3d get_action(Bin &cur_bin, vector_3d &dim) {
+        std::vector<std::vector<int>> cur_state = cur_bin.get_state();
         int lx = dim.x, ly = dim.y, lz = dim.z;
         double max_score=-DBL_MAX;
-        int idx = -1;
+        Bin after_state;
+        eval_feature x;
+        std::vector<double> features;
+        std::pair<int, int> idx = {-1,-1};
         int ori = -1;
-        for (int i = 0; i < icpbcp_list.size(); i++) {
-            if (check_without_precomputation(cur_state, {icpbcp_list[i].first.x, icpbcp_list[i].first.y}, dim)) {
-                auto icp_bcp = icpbcp_list[i];
-                int x_diff = icp_bcp.second.x - icp_bcp.first.x;
-                int y_diff = icp_bcp.second.y - icp_bcp.first.y;
-                int z_diff = icp_bcp.second.z - icp_bcp.first.z;
-
-                if ((x_diff >= lx && y_diff >= ly && z_diff >= lz)) {
-                    int holes = find_holes(cur_state, {icpbcp_list[i].first.x, icpbcp_list[i].first.y}, dim);
-                    Bin temp_bin = cur_bin;
-                    temp_bin.update_state({icpbcp_list[i].first.x, icpbcp_list[i].first.y}, dim);
-                    eval_feature x;
+        precompute_max_min(cur_state);
+        for (int i = 0; i < BIN_WIDTH; i+=10)
+        {
+            for (int j = 0; j < BIN_LENGTH; j+=10)
+            {
+                //std::cout<<i<<" "<<j<<std::endl;
+                if (check_with_precomputation(cur_state, {i, j}, dim)) {
+                    int holes = find_holes(cur_state, {i, j}, dim);
+                    after_state = cur_bin;
+                    after_state.update_state({i, j}, dim);
                     x.holes = holes;
-                    std::vector<double> features = extract_state_features_with_symmetry(temp_bin, x, dim, icpbcp_list[i].first.x, icpbcp_list[i].first.y);
+                    features = extract_state_features_with_symmetry(after_state, x, dim, i, j);
                     // double temp_max = evaluate(features);
                     double temp_max = evaluate_with_symmetry(features);
                     if(temp_max > max_score){
-                        idx = i;
+                        idx = {i,j};
                         max_score = temp_max;
                         ori = 0;
                     }
                 }
-            }
-            vector_3d rotated_dim={dim.y, dim.x, dim.z};
-            if (check_without_precomputation(cur_state, {icpbcp_list[i].first.x, icpbcp_list[i].first.y}, rotated_dim)) {
-                auto icp_bcp = icpbcp_list[i];
-                int x_diff = icp_bcp.second.x - icp_bcp.first.x;
-                int y_diff = icp_bcp.second.y - icp_bcp.first.y;
-                int z_diff = icp_bcp.second.z - icp_bcp.first.z;
-                if ((x_diff >= lx && y_diff >= ly && z_diff >= lz)) {
-                    int holes = find_holes(cur_state, {icpbcp_list[i].first.x, icpbcp_list[i].first.y}, rotated_dim);
-                    Bin temp_bin = cur_bin;
-                    temp_bin.update_state({icpbcp_list[i].first.x, icpbcp_list[i].first.y}, rotated_dim);
-                    eval_feature x;
-                    x.holes=holes;
-                    std::vector<double> features = extract_state_features_with_symmetry(temp_bin, x, rotated_dim, icpbcp_list[i].first.x, icpbcp_list[i].first.y);
+                vector_3d rotated_dim={dim.y, dim.x, dim.z};
+                if (check_with_precomputation(cur_state, {i, j}, rotated_dim)) {
+                    int holes = find_holes(cur_state, {i, j}, rotated_dim);
+                    after_state = cur_bin;
+                    after_state.update_state({i, j}, rotated_dim);
+                    x.holes = holes;
+                    features = extract_state_features_with_symmetry(after_state, x, rotated_dim, i, j);
                     // double temp_max = evaluate(features);
                     double temp_max = evaluate_with_symmetry(features);
-                    if (temp_max > max_score) {
-                        idx = i;
+                    if(temp_max > max_score){
+                        idx = {i,j};
                         max_score = temp_max;
                         ori = 1;
                     }
                 }
+
             }
         }
-        after_state_score=max_score;
-        return {idx, ori};
+        return {idx.first, idx.second, ori};
     }
 
    public:
-    Smart_Algorithm_WithLookahead() {
+    Smart_Algorithm_WithoutICP_BCP() {
 
     }
-    Smart_Algorithm_WithLookahead(GenerateBox gb, Sim &simulator,const std::vector<double>&params) : Base(gb, simulator) {
+    Smart_Algorithm_WithoutICP_BCP(GenerateBox gb, Sim &simulator,const std::vector<double>&params) : Base(gb, simulator) {
         this->params = params;
     }
-    bool put_box(Sim &simulator, int bin_id, vector_3d box, double &after_state_score) {
+    bool put_box(Sim &simulator, int bin_id, vector_3d box) {
         //std::vector<std::vector<int>> cur_state = simulator.bin_instances[bin_id].get_state();
         // bin_instance.print_state();
-        std::vector<std::pair<vector_3d, vector_3d>> icpbcp_list = simulator.bin_instances[bin_id].get_icbp_list();
         //precompute_max_min(cur_state);
-        auto idx_ori = get_action(simulator.bin_instances[bin_id], box, after_state_score);
-        auto icp_bcp=simulator.bin_instances[bin_id].get_icbp_list()[idx_ori.first].first;
+        auto idx_ori = get_action(simulator.bin_instances[bin_id], box);
         // std::cout << idx_ori.first << "\n";
-        if (idx_ori.first >= 0) {
-            int height=simulator.step(bin_id, idx_ori.first, box, idx_ori.second);
-            write_file<<bin_id<<" "<<box.x<<" "<<box.y<<" "<<box.z<<" "<<icp_bcp.x<<" "<<icp_bcp.y<<" "<<height<<" "<<idx_ori.second<<"\n"; 
+        if (idx_ori.x >= 0) {
+            int height=simulator.step(bin_id, {idx_ori.x,idx_ori.y}, box, idx_ori.z);
+            write_file<<bin_id<<" "<<box.x<<" "<<box.y<<" "<<box.z<<" "<<idx_ori.x<<" "<<idx_ori.y<<" "<<height<<" "<<idx_ori.z<<"\n"; 
             return height!=-1;
         } else {
             //std::cout << "could not place the box" << std::endl;
@@ -320,90 +311,28 @@ class Smart_Algorithm_WithLookahead : public Base {
         features.push_back(1);
         return features;
     }
-     performance_metric execute(Sim &simulator, int lookahead) {
-        simulator.size_of_box_stream=boxes.size();
-        std::vector<vector_3d> lookaehead_buffer;
-        for(int i=0;i<lookahead;i++)
-            lookaehead_buffer.push_back(boxes[i]);
-        
-        write_file.open(write_file_name);
-        for(int i=lookahead; i<boxes.size(); i++){
-            lookaehead_buffer.push_back(boxes[i]);
-            std::vector<int> idx(lookahead+1);
-            std::iota(idx.begin(), idx.end(), 0);
-            double max_after_state_score=-DBL_MAX;
-            int best_box_id=-1;
-            do{
-                auto temp_simulator = simulator;
-                int cur_first_box = idx[0];
-                double after_state_score;
-                for(int box_id: idx){
-                    int flag = 0;
-                    for (int i = 0; i < temp_simulator.bin_instances.size(); i++) {
-                        if (temp_simulator.bin_instances[i].is_open()) {
-                            if (put_box(temp_simulator, i, lookaehead_buffer[box_id], after_state_score)) {
-                                // std::cout<<"put"<<"\n";
-                                flag = 1;
-                                break;
-                            }
-                        }
-                    }
-                    if (!flag && temp_simulator.open_new_bin()) {
-                        put_box(temp_simulator, temp_simulator.bin_instances.size() - 1, lookaehead_buffer[box_id], after_state_score);
-                    }
-                    
-                }
-                if(max_after_state_score<after_state_score){
-                        max_after_state_score=after_state_score;
-                        best_box_id=cur_first_box;
-                }
-            }while(std::next_permutation(idx.begin(), idx.end()));
 
-            if(best_box_id!=-1){
-                int flag = 0;
-                double after_state_score;
-                for (int i = 0; i < simulator.bin_instances.size(); i++) {
-                    if (simulator.bin_instances[i].is_open()) {
-                        if (put_box(simulator, i, lookaehead_buffer[best_box_id], after_state_score)) {
-                            // std::cout<<"put"<<"\n";
-                            flag = 1;
-                            break;
-                        }
+    performance_metric execute(Sim &simulator, int lookahead) {
+        simulator.size_of_box_stream=boxes.size();
+        write_file.open(write_file_name);
+        for (auto box : boxes) {
+            //std::cout << box.x << " " << box.y << " " << box.z << "\n";
+            int flag = 0;
+            for (int i = 0; i < simulator.bin_instances.size(); i++) {
+                if (simulator.bin_instances[i].is_open()) {
+                    if (put_box(simulator, i, box)) {
+                        // std::cout<<"put"<<"\n";
+                        flag = 1;
+                        break;
                     }
-                }
-                if (!flag && simulator.open_new_bin()) {
-                    put_box(simulator, simulator.bin_instances.size() - 1, lookaehead_buffer[best_box_id], after_state_score);
                 }
             }
-            else
-                best_box_id=0;
-            lookaehead_buffer.erase(lookaehead_buffer.begin()+best_box_id);
+            if (!flag && simulator.open_new_bin()) {
+                put_box(simulator, simulator.bin_instances.size() - 1, box);
+            }
         }
         write_file.close();
+
         return simulator.get_performance_metric(1);
-
-     }
-    // performance_metric execute(Sim &simulator, int lookahead) {
-    //     simulator.size_of_box_stream=boxes.size();
-    //     write_file.open(write_file_name);
-    //     for (auto box : boxes) {
-    //         // std::cout << box.x << " " << box.y << " " << box.z << "\n";
-    //         int flag = 0;
-    //         for (int i = 0; i < simulator.bin_instances.size(); i++) {
-    //             if (simulator.bin_instances[i].is_open()) {
-    //                 if (put_box(simulator, i, box)) {
-    //                     // std::cout<<"put"<<"\n";
-    //                     flag = 1;
-    //                     break;
-    //                 }
-    //             }
-    //         }
-    //         if (!flag && simulator.open_new_bin()) {
-    //             put_box(simulator, simulator.bin_instances.size() - 1, box);
-    //         }
-    //     }
-    //     write_file.close();
-
-    //     return simulator.get_performance_metric(1);
-    // }
+    }
 };

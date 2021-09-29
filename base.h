@@ -7,7 +7,7 @@
 #include <thread>
 #include <tuple>
 #include <vector>
-
+#include <float.h>
 #include "bin.h"
 #include "config.h"
 #include "generate_box.h"

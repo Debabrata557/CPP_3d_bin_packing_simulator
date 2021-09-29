@@ -3,7 +3,7 @@
 #include <climits>
 #include <cstdlib>
 #include <vector>
-int grid_max(std::vector<std::vector<int>> grid, int start_x, int end_x, int start_y, int end_y)
+int grid_max(const std::vector<std::vector<int>> &grid, int start_x, int end_x, int start_y, int end_y)
 {
     int tmp_max = INT_MIN;
     for (int i = start_x; i < end_x; i++)
@@ -15,7 +15,7 @@ int grid_max(std::vector<std::vector<int>> grid, int start_x, int end_x, int sta
     }
     return tmp_max;
 }
-int grid_min(std::vector<std::vector<int>> grid, int start_x, int end_x, int start_y, int end_y)
+int grid_min(const std::vector<std::vector<int>>& grid, int start_x, int end_x, int start_y, int end_y)
 {
     int tmp_min = INT_MAX;
     for (int i = start_x; i < end_x; i++)
@@ -28,7 +28,7 @@ int grid_min(std::vector<std::vector<int>> grid, int start_x, int end_x, int sta
     return tmp_min;
 }
 
-std::pair<int, int> grid_max_min(std::vector<std::vector<int>> grid, int start_x, int end_x, int start_y, int end_y)
+std::pair<int, int> grid_max_min(const std::vector<std::vector<int>>& grid, int start_x, int end_x, int start_y, int end_y)
 {
     int tmp_min = INT_MAX;
     int tmp_max = INT_MIN;
@@ -43,7 +43,7 @@ std::pair<int, int> grid_max_min(std::vector<std::vector<int>> grid, int start_x
     return {tmp_max, tmp_min};
 }
 
-int grid_count(std::vector<std::vector<int>> grid, int start_x, int end_x, int start_y, int end_y, int element, int tolerance)
+int grid_count(const std::vector<std::vector<int>> &grid, int start_x, int end_x, int start_y, int end_y, int element, int tolerance)
 {
     int count = 0;
     for (int i = start_x; i < end_x; i++)

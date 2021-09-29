@@ -3,6 +3,9 @@
 std::vector<vector_3d> boxes;
 std::vector<std::vector<std::vector<std::vector<int>>>> pre_computed_max;
 std::vector<std::vector<std::vector<std::vector<int>>>> pre_computed_min;
+
+
+
 std::pair<int, int> Base::compute_max_min(int x1, int x2, int y1, int y2)
 {
     //std::cout<<x1<<" "<<y1<<" "<<x2<<" "<<y2<<" "<<std::endl;
@@ -25,7 +28,7 @@ void Base::precompute_max_min(const std::vector<std::vector<int>> &state)
                 {
                     if (i == 0 and j == 0)
                     {
-                        pre_computed_max[x][y][i][j] = state[x][y]; // store x, y
+                        pre_computed_max[x][y][i][j] = state[x][y];// store x, y
                         pre_computed_min[x][y][i][j] = state[x][y];
                     }
                     else if (i == 0)
@@ -54,6 +57,8 @@ Base::Base()
 }
 Base::Base(GenerateBox gb, Sim &simulator)
 {
+    pre_computed_max= std::vector<std::vector<std::vector<std::vector<int>>>>(BIN_WIDTH+1, std::vector<std::vector<std::vector<int>>>(BIN_LENGTH+1, std::vector<std::vector<int>>(MAX_BOX_WIDTH+1, std::vector<int>(MAX_BOX_LENGTH+1))));
+    pre_computed_min= std::vector<std::vector<std::vector<std::vector<int>>>>(BIN_WIDTH+1, std::vector<std::vector<std::vector<int>>>(BIN_LENGTH+1, std::vector<std::vector<int>>(MAX_BOX_WIDTH+1, std::vector<int>(MAX_BOX_LENGTH+1))));
     this->gb = gb;
     //this->simulator = simulator;
     boxes = gb.get_stream_of_boxes();

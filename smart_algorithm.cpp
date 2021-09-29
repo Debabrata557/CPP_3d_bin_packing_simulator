@@ -27,7 +27,7 @@ class Smart_Algorithm : public Base {
         auto icpbcp_list = cur_bin.get_icbp_list();
         auto cur_state = cur_bin.get_state();
         int lx = dim.x, ly = dim.y, lz = dim.z;
-        double max_score = INT_MIN;
+        double max_score=-DBL_MAX;
         int idx = -1;
         int ori = -1;
         for (int i = 0; i < icpbcp_list.size(); i++) {
@@ -112,7 +112,7 @@ class Smart_Algorithm : public Base {
         // std::cout<<sum<<"\n";
         return sum;
     }
-    int evaluate_with_symmetry(std::vector<double> &features) {
+    double evaluate_with_symmetry(std::vector<double> &features) {
         double sum = 0;
         int extra_feature=3;
         //assert params.size()==features.size();

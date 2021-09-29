@@ -16,6 +16,7 @@
 #include "smart_algorithm2.cpp"
 #include "random_algorithm.cpp"
 #include "smart_algo_withlookahead.cpp"
+#include "smart_algorithm_without_icp_bcp.cpp"
 
 std::ifstream read_file;
 std::ofstream write_file;
@@ -47,8 +48,9 @@ performance_metric worker(int seed)//episode number is seed
         read_file>>params[i];
         // std::cout<<params[i]<<"\n";
     }
-    Base* x = new Smart_Algorithm_WithLookahead(gb, simulator, params);
-    //Base* x = new Smart_Algorithm(gb, simulator, params);
+    //Base* x = new Smart_Algorithm_WithoutICP_BCP(gb, simulator, params);
+    //Base* x = new Smart_Algorithm_WithLookahead(gb, simulator, params);
+    Base* x = new Smart_Algorithm(gb, simulator, params);
     //Base* x = new Random_Algorithm(gb, simulator);
     //Base* x = new Smart_Algorithm2(gb, simulator, params);
     performance_metric pm = x->execute(simulator, lookahead);

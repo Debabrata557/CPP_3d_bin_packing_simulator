@@ -70,8 +70,8 @@ if __name__ == '__main__':
 
     # NUM_SIMULATIONS = args['num_simulations']
     client = Client()
-    FILTER_SIZE = 20
-    STRIDE = 20
+    FILTER_SIZE = 10
+    STRIDE = 10
     EXTRACT_FEATURE_AREA=70
     BIN_WIDTH=120
     BIN_LENGTH=180
@@ -327,8 +327,8 @@ if __name__ == '__main__':
     # with open(f'{directory}/parameters.json', 'w') as parameters_file:
     #     json.dump(args, parameters_file)
 
-    #run_solver(solver)
-    run_overfit(solver)
+    run_solver(solver)
+    #run_overfit(solver)
     #run_simulation(0,30,"smart_algo", weights=[0]*46, gen=0)
 
     # for i in range(NPOPULATION):

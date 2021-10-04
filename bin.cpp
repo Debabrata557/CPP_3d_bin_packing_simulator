@@ -49,7 +49,7 @@ bool Bin::is_overlapping(std::pair<vector_3d, vector_3d> icpbcp, vector_3d pos, 
                 int cur_x = pos.x + i * size.x;
                 int cur_y = pos.y + j * size.y;
                 int cur_z = pos.z + k * size.z;
-                if (cur_x > icpbcp.first.x && cur_x < icpbcp.second.x && cur_y > icpbcp.first.y && cur_y < icpbcp.second.y && cur_z > icpbcp.first.z && cur_z < icpbcp.second.z) {
+                if (cur_x >= icpbcp.first.x && cur_x <= icpbcp.second.x && cur_y >= icpbcp.first.y && cur_y <= icpbcp.second.y && cur_z >= icpbcp.first.z && cur_z <= icpbcp.second.z) {
                     return true;
                 }
             }

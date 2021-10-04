@@ -90,7 +90,7 @@ class Smart_Algorithm_WithLookahead_Multibin : public Base {
     bool put_box(Sim &simulator, int bin_id, vector_3d box, double &after_state_score) {
         //std::vector<std::vector<int>> cur_state = simulator.bin_instances[bin_id].get_state();
         // bin_instance.print_state();
-        std::vector<std::pair<vector_3d, vector_3d>> icpbcp_list = simulator.bin_instances[bin_id].get_icbp_list();
+        std::vector<std::pair<vector_3d, vector_3d>> &icpbcp_list = simulator.bin_instances[bin_id].get_icbp_list();
         //precompute_max_min(cur_state);
         auto idx_ori = get_action(simulator.bin_instances[bin_id], box, after_state_score);
         auto icp_bcp=simulator.bin_instances[bin_id].get_icbp_list()[idx_ori.first].first;

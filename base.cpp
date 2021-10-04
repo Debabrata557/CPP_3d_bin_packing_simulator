@@ -108,7 +108,7 @@ bool Base::check_with_precomputation(const std::vector<std::vector<int>> &state,
         int corner3_min = corner3_max_min.second;
         int corner4_min = corner4_max_min.second;
 
-        if (max_height + lz >= BIN_HEIGHT)
+        if (max_height + lz > BIN_HEIGHT)
         {
             return 0;
         }
@@ -168,7 +168,7 @@ bool Base::check_without_precomputation(const std::vector<std::vector<int>> &sta
         // int corner3_min = corner3_max_min.second;
         // int corner4_min = corner4_max_min.second;
 
-        if (max_height + lz >= BIN_HEIGHT)
+        if (max_height + lz > BIN_HEIGHT)
         {
             return 0;
         }

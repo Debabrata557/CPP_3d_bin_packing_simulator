@@ -54,6 +54,7 @@ class Smart_Algorithm : public Base {
                 }
             }
             vector_3d rotated_dim={dim.y, dim.x, dim.z};
+            lx = rotated_dim.x, ly = rotated_dim.y, lz = rotated_dim.z;
             if (check_without_precomputation(cur_state, {icpbcp_list[i].first.x, icpbcp_list[i].first.y}, rotated_dim)) {
                 auto icp_bcp = icpbcp_list[i];
                 int x_diff = icp_bcp.second.x - icp_bcp.first.x;
@@ -89,7 +90,7 @@ class Smart_Algorithm : public Base {
     bool put_box(Sim &simulator, int bin_id, vector_3d box) {
         //std::vector<std::vector<int>> cur_state = simulator.bin_instances[bin_id].get_state();
         // bin_instance.print_state();
-        std::vector<std::pair<vector_3d, vector_3d>> icpbcp_list = simulator.bin_instances[bin_id].get_icbp_list();
+        std::vector<std::pair<vector_3d, vector_3d>> &icpbcp_list = simulator.bin_instances[bin_id].get_icbp_list();
         //precompute_max_min(cur_state);
         auto idx_ori = get_action(simulator.bin_instances[bin_id], box);
         auto icp_bcp=simulator.bin_instances[bin_id].get_icbp_list()[idx_ori.first].first;
@@ -99,6 +100,7 @@ class Smart_Algorithm : public Base {
             write_file<<bin_id<<" "<<box.x<<" "<<box.y<<" "<<box.z<<" "<<icp_bcp.x<<" "<<icp_bcp.y<<" "<<height<<" "<<idx_ori.second<<"\n"; 
             return height!=-1;
         } else {
+            write_file<<bin_id<<" "<<box.x<<" "<<box.y<<" "<<box.z<<" "<<icp_bcp.x<<" "<<icp_bcp.y<<" "<<-1<<" "<<idx_ori.second<<"\n"; 
             //std::cout << "could not place the box" << std::endl;
         }
         return 0;

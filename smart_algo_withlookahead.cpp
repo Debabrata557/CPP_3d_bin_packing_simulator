@@ -54,6 +54,7 @@ class Smart_Algorithm_WithLookahead : public Base {
                 }
             }
             vector_3d rotated_dim={dim.y, dim.x, dim.z};
+            lx = rotated_dim.x, ly = rotated_dim.y, lz = rotated_dim.z;
             if (check_without_precomputation(cur_state, {icpbcp_list[i].first.x, icpbcp_list[i].first.y}, rotated_dim)) {
                 auto icp_bcp = icpbcp_list[i];
                 int x_diff = icp_bcp.second.x - icp_bcp.first.x;

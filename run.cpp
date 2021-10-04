@@ -46,7 +46,11 @@ performance_metric worker(std::string algo_name, int seed, int episode, std::str
         // std::cout<<params[i]<<"\n";
     }
     Base *x;
-    if(algo_name=="first_fit_icp"){
+    if(algo_name=="first_fit"){
+        std::cout<<"running first_fit.."<<episode<<" "<<seed<<"\n";
+        x = new First_Fit(gb, simulator);
+    }
+    else if(algo_name=="first_fit_icp"){
         std::cout<<"running first_fit_icp.."<<episode<<" "<<seed<<"\n";
         x = new First_Fit_Icp(gb, simulator);
     }
@@ -58,20 +62,24 @@ performance_metric worker(std::string algo_name, int seed, int episode, std::str
         std::cout<<"running smart algorithm.."<<episode<<" "<<seed<<"\n";
         x = new Smart_Algorithm(gb, simulator, params);
     }
+    else if(algo_name=="smart_algo_with_lookahead"){
+        std::cout<<"running smart algorithm with lookahead.."<<episode<<" "<<seed<<"\n";
+        x = new Smart_Algorithm_WithLookahead(gb, simulator, params);
+        lookahead=2;
+    }
+    else if(algo_name=="smart_algo_without_icp_bcp"){
+        std::cout<<"running smart algorithm without icp bcp.."<<episode<<" "<<seed<<"\n";
+        x = new Smart_Algorithm_WithoutICP_BCP(gb, simulator, params);
+        lookahead=0;
+    }
     // Base *x = new First_Fit(gb, bin_instances);
     // Base *x = new Floor_Building(gb, bin_instances);
-    //Base* x = new Smart_Algorithm_WithoutICP_BCP(gb, simulator, params);
     //Base* x = new Smart_Algorithm_WithLookahead(gb, simulator, params);
     //Base* x = new Random_Algorithm(gb, simulator);
     //Base* x = new Smart_Algorithm2(gb, simulator, params);
     performance_metric pm = x->execute(simulator, lookahead);
     std::cout<<pm.efficiency<<std::endl;
-    // std::cout << bin_instances.size() << "\n";
-    // for (int i = 1; i <= bin_instances.size(); i++) {
-    //     std::cout << i << " " << bin_instances[i - 1].no_of_boxes_placed << " " << bin_instances[i - 1].volume << "\n";
-    // }
-    // std::cout << "efficiency"
-    //           << " " << efficiency << "\n";
+
     delete (x);
     read_file.close();
     return pm;
@@ -125,16 +133,16 @@ int main(int argc,char** argv)
         }
         // std::cout << k << "\n";
     }
-    std::cout << "avg efficiency"
-              << " " << efficiency / episode << " ";
-    std::cout << "avg no of bins"
-              << " " << no_of_bins / episode << " ";
-    std::cout << "average total boxes"
-              << " " << total_boxes / episode << " ";
-    std::cout << "min efficiency"
-              << " " << mineff << "\n";
-    std::cout << "min seed"
-              << " " << minseed << "\n";
+    // std::cout << "avg efficiency"
+    //           << " " << efficiency / episode << " ";
+    // std::cout << "avg no of bins"
+    //           << " " << no_of_bins / episode << " ";
+    // std::cout << "average total boxes"
+    //           << " " << total_boxes / episode << " ";
+    // std::cout << "min efficiency"
+    //           << " " << mineff << "\n";
+    // std::cout << "min seed"
+    //           << " " << minseed << "\n";
 
     
     clock_t end_time = clock();

@@ -91,6 +91,7 @@ class Smart_Algorithm_WithoutICP_BCP: public Base {
             write_file<<bin_id<<" "<<box.x<<" "<<box.y<<" "<<box.z<<" "<<idx_ori.x<<" "<<idx_ori.y<<" "<<height<<" "<<idx_ori.z<<"\n"; 
             return height!=-1;
         } else {
+            write_file<<bin_id<<" "<<box.x<<" "<<box.y<<" "<<box.z<<" "<<idx_ori.x<<" "<<idx_ori.y<<" "<<-1<<" "<<-1<<"\n"; 
             //std::cout << "could not place the box" << std::endl;
         }
         return 0;

@@ -88,7 +88,7 @@ class Smart_Algorithm_WithLookahead : public Base {
     Smart_Algorithm_WithLookahead(GenerateBox gb, Sim &simulator,const std::vector<double>&params) : Base(gb, simulator) {
         this->params = params;
     }
-    bool put_box(Sim &simulator, int bin_id, vector_3d box, double &after_state_score) {
+    bool put_box(Sim &simulator, int bin_id, vector_3d box, double &after_state_score, int real) {
         //std::vector<std::vector<int>> cur_state = simulator.bin_instances[bin_id].get_state();
         // bin_instance.print_state();
         std::vector<std::pair<vector_3d, vector_3d>> icpbcp_list = simulator.bin_instances[bin_id].get_icbp_list();
@@ -98,9 +98,12 @@ class Smart_Algorithm_WithLookahead : public Base {
         // std::cout << idx_ori.first << "\n";
         if (idx_ori.first >= 0) {
             int height=simulator.step(bin_id, idx_ori.first, box, idx_ori.second);
-            write_file<<bin_id<<" "<<box.x<<" "<<box.y<<" "<<box.z<<" "<<icp_bcp.x<<" "<<icp_bcp.y<<" "<<height<<" "<<idx_ori.second<<"\n"; 
+            if(real)
+                write_file<<bin_id<<" "<<box.x<<" "<<box.y<<" "<<box.z<<" "<<icp_bcp.x<<" "<<icp_bcp.y<<" "<<height<<" "<<idx_ori.second<<"\n"; 
             return height!=-1;
         } else {
+            if(real)
+                write_file<<bin_id<<" "<<box.x<<" "<<box.y<<" "<<box.z<<" "<<icp_bcp.x<<" "<<icp_bcp.y<<" "<<-1<<" "<<-1<<"\n"; 
             //std::cout << "could not place the box" << std::endl;
         }
         return 0;
@@ -342,7 +345,7 @@ class Smart_Algorithm_WithLookahead : public Base {
                     int flag = 0;
                     for (int i = 0; i < temp_simulator.bin_instances.size(); i++) {
                         if (temp_simulator.bin_instances[i].is_open()) {
-                            if (put_box(temp_simulator, i, lookaehead_buffer[box_id], after_state_score)) {
+                            if (put_box(temp_simulator, i, lookaehead_buffer[box_id], after_state_score,0)) {
                                 // std::cout<<"put"<<"\n";
                                 flag = 1;
                                 break;
@@ -350,7 +353,7 @@ class Smart_Algorithm_WithLookahead : public Base {
                         }
                     }
                     if (!flag && temp_simulator.open_new_bin()) {
-                        put_box(temp_simulator, temp_simulator.bin_instances.size() - 1, lookaehead_buffer[box_id], after_state_score);
+                        put_box(temp_simulator, temp_simulator.bin_instances.size() - 1, lookaehead_buffer[box_id], after_state_score,0);
                     }
                     
                 }
@@ -365,7 +368,7 @@ class Smart_Algorithm_WithLookahead : public Base {
                 double after_state_score;
                 for (int i = 0; i < simulator.bin_instances.size(); i++) {
                     if (simulator.bin_instances[i].is_open()) {
-                        if (put_box(simulator, i, lookaehead_buffer[best_box_id], after_state_score)) {
+                        if (put_box(simulator, i, lookaehead_buffer[best_box_id], after_state_score,1)) {
                             // std::cout<<"put"<<"\n";
                             flag = 1;
                             break;
@@ -373,7 +376,7 @@ class Smart_Algorithm_WithLookahead : public Base {
                     }
                 }
                 if (!flag && simulator.open_new_bin()) {
-                    put_box(simulator, simulator.bin_instances.size() - 1, lookaehead_buffer[best_box_id], after_state_score);
+                    put_box(simulator, simulator.bin_instances.size() - 1, lookaehead_buffer[best_box_id], after_state_score,1);
                 }
             }
             else

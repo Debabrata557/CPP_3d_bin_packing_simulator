@@ -86,6 +86,8 @@ if __name__ == '__main__':
     directory = "test_dir"
     NPOPULATION = 25
     MAXITER = 100000
+
+
     def save_weights_to_file(weights, filename):
          with open(filename,"w") as f:
             for w in weights:
@@ -98,7 +100,58 @@ if __name__ == '__main__':
     #             file.write(f'{s}\n')
 
     
-    
+    def run_overfit(solver):
+        # sigmas=[]
+        # best_result_obj1 = float('inf')
+        # best_result_cur_obj = float('inf')
+        for j in range(MAXITER):
+            tic1 = time.time()
+            solutions = solver.ask()
+
+            fitness_list_futures = []
+            seed = 75
+            #seed=0
+            fitness_list_futures.append(
+                            client.map(
+                                fit_func,
+                                [seed for x in range(NPOPULATION)],
+                                [1 for x in range(NPOPULATION)],
+                                ["smart_algo" for x in range(NPOPULATION)],
+                                solutions,
+                                [x for x in range(NPOPULATION)],
+                                pure=False
+                            )
+                        )
+
+            progress(fitness_list_futures)
+            results = client.gather(fitness_list_futures)
+            del fitness_list_futures
+            tac1 = time.time()
+            effs = [r["eff"] for r in results[0]]
+            boxes_put = [r["boxes_put"] for r in results[0]]
+            genTime = [r["genTime"] for r in results[0]]
+
+            solver.tell([x for x in effs])
+            if solver.es.sigma>100:
+                break
+
+            row = [
+					str(j+1),
+					str(np.min(effs)),
+					str(np.mean(effs)),
+					str(np.max(effs)),
+					str(solver.es.sigma),
+					str(np.min(boxes_put)),
+					str(np.mean(boxes_put)),
+					str(np.max(boxes_put)),
+                    str(np.mean(genTime)),
+					str((tac1-tic1)*1000)
+				]
+
+            # _row = pretty_format_row(row)
+            print('train result: ')
+            print(row)
+
     def run_solver(solver):
         # sigmas=[]
         # best_result_obj1 = float('inf')
@@ -115,6 +168,8 @@ if __name__ == '__main__':
                             client.map(
                                 fit_func,
                                 [seed for x in range(NPOPULATION)],
+                                [1 for x in range(NPOPULATION)],
+                                ["smart_algo" for x in range(NPOPULATION)],
                                 solutions,
                                 [x for x in range(NPOPULATION)],
                                 pure=False
@@ -130,6 +185,8 @@ if __name__ == '__main__':
             genTime = [r["genTime"] for r in results[0]]
 
             solver.tell([x for x in effs])
+            if solver.es.sigma>100:
+                break
 
             row = [
 					str(j+1),
@@ -168,23 +225,31 @@ if __name__ == '__main__':
 
         # with open(f'{directory}/solver', 'wb') as solver_file:
                 # pickle.dump(solver, solver_file)
+    def save_weights_to_file(weights, filename):
+         with open(filename,"w") as f:
+            for w in weights:
+                f.write(f'{w}\n')
+
     def run_test(solver, file):
         test_episode=30
         tic1 = time.time()
-        solutions = [solver.current_param()]*test_episode
+        bestFile='bestWeights.txt'
+        bestMean=-1
 
         fitness_list_futures = []
         seed = np.random.randint(0,1000)
         #seed=0
         fitness_list_futures.append(
-                        client.map(
-                            fit_func,
-                            [seed+x for x in range(test_episode)],
-                            solutions,
-                            [x for x in range(test_episode)],
-                            pure=False
-                        )
+                    client.map(
+                        fit_func,
+                        [seed+x for x in range(test_episode)],
+                        [1 for x in range(test_episode)],
+                        ["smart_algo" for x in range(test_episode)],
+                        [solver.current_param() for x in range(test_episode)],
+                        [x for x in range(test_episode)],
+                        pure=False
                     )
+                )
 
         progress(fitness_list_futures)
         results = client.gather(fitness_list_futures)
@@ -193,7 +258,8 @@ if __name__ == '__main__':
         effs = [r["eff"] for r in results[0]]
         boxes_put = [r["boxes_put"] for r in results[0]]
         genTime = [r["genTime"] for r in results[0]]
-
+        if np.mean(effs)>bestMean:
+                save_weights_to_file(solver.current_param().tolist(),f'{directory}/{bestFile}')
         row = [
                 str(np.min(effs)),
                 str(np.mean(effs)),
@@ -212,11 +278,11 @@ if __name__ == '__main__':
         print('test results: ')
         print(row)
 
-    def run_simulation(seed,weights=None, gen=None):
+    def run_simulation(seed,episode,algo_name, weights=None, gen=None):
         filename_in = f'{directory}/weights_{gen}.txt'
         filename_out = f'{directory}/result_{gen}.txt'
         save_weights_to_file(weights,filename_in)
-        return run_subproccess(['./build/run',filename_in,filename_out,str(seed)])
+        return run_subproccess(['./build/run',filename_in,filename_out,str(seed),str(episode), algo_name])
 
 
     # if args['test']:
@@ -253,7 +319,7 @@ if __name__ == '__main__':
     solver = CMAES(
             NPARAMS,
             popsize=NPOPULATION,
-            weight_decay=0.001,
+            weight_decay=0.01,
             sigma_init=0.5,
             initial_weights=weights
         )
@@ -261,7 +327,9 @@ if __name__ == '__main__':
     # with open(f'{directory}/parameters.json', 'w') as parameters_file:
     #     json.dump(args, parameters_file)
 
-    run_solver(solver)
+    #run_solver(solver)
+    run_overfit(solver)
+    #run_simulation(0,30,"smart_algo", weights=[0]*46, gen=0)
 
     # for i in range(NPOPULATION):
     #     os.remove(f'{directoryweights}/weights_{i}.txt')

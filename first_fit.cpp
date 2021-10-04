@@ -1,8 +1,10 @@
 #include "base.h"
-
+#include <fstream>
 class First_Fit : public Base
 {
 private:
+    std::ofstream write_file;
+    std::string write_file_name = "details.txt";
     std::vector<int> get_action(std::vector<std::vector<int>> &state, vector_3d &dim)
     {
         int lx = dim.x, ly = dim.y, lz = dim.z;
@@ -44,16 +46,20 @@ public:
         std::vector<int> pose = get_action(cur_state, box);
         if (pose[0] >= 0)
         {
-            return simulator.step(bin_id, {pose[0], pose[1]}, box, pose[2])!=-1;
+            int height=simulator.step(bin_id, {pose[0], pose[1]}, box, pose[2]);
+            write_file<<bin_id<<" "<<box.x<<" "<<box.y<<" "<<box.z<<" "<<pose[0]<<" "<<pose[1]<<" "<<height<<" "<<pose[2]<<"\n";
+            return height!=-1;
         }
         else
         {
+            write_file<<bin_id<<" "<<box.x<<" "<<box.y<<" "<<box.z<<" "<<pose[0]<<" "<<pose[1]<<" "<<-1<<" "<<-1<<"\n";
             //a  std::cout << "could not place the box" << std::endl;
         }
         return 0;
     }
     performance_metric execute(Sim &simulator, int lookahead)
     {
+        write_file.open(write_file_name);
         simulator.size_of_box_stream = boxes.size();
         for (auto box : boxes)
         {
@@ -75,7 +81,7 @@ public:
                 put_box(simulator, simulator.bin_instances.size() - 1, box);
             }
         }
-
+        write_file.close();
         return simulator.get_performance_metric(1);
     }
 };

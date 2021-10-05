@@ -11,17 +11,17 @@
 #include "floor_building.cpp"
 #include "floor_building_icp.cpp"
 #include "generate_box.h"
+#include "random_algorithm.cpp"
 #include "sim.h"
+#include "smart_algo_withlookahead.cpp"
 #include "smart_algorithm.cpp"
 #include "smart_algorithm2.cpp"
-#include "random_algorithm.cpp"
-#include "smart_algo_withlookahead.cpp"
 #include "smart_algorithm_without_icp_bcp.cpp"
 
 std::ifstream read_file;
 std::ofstream write_file;
 
-performance_metric worker(std::string algo_name, int seed, int episode, std::string read_file_name)//episode number is seed
+performance_metric worker(std::string algo_name, int seed, int episode, std::string read_file_name)  //episode number is seed
 {
     // GenerateBox gb = GenerateBox(seed, "random", 2000);
     GenerateBox gb = GenerateBox(seed, "cut1", 0);
@@ -35,72 +35,63 @@ performance_metric worker(std::string algo_name, int seed, int episode, std::str
     //simulator.set_limits(bin_limit, max_open_bin);
     // int NPARAMS_X = (BIN_WIDTH+STRIDE-1)/STRIDE; //without symmetry
     // int NPARAMS_Y = (BIN_LENGTH+STRIDE-1)/STRIDE;
-    int NPARAMS_X = ((BIN_WIDTH/2) + STRIDE - 1) / STRIDE; // with symmetry
-    int NPARAMS_Y = ((BIN_LENGTH/2) + STRIDE - 1) / STRIDE;
     // int NPARAMS_X = (EXTRACT_FEATURE_AREA+STRIDE-1)/STRIDE;
-    // int NPARAMS_Y = (EXTRACT_FEATURE_AREA+STRIDE-1)/STRIDE;
-    int NPARAMS = 3*NPARAMS_X*NPARAMS_Y+1+1+1;  /// this should be integer.Discreteization factor must be a factor of BIN_WIDTH and BIN_LENGTH
-    std::vector<double> params(NPARAMS, 0);
-    for (int i = 0; i < NPARAMS; i++) {
-        read_file>>params[i];
+    // int NPARAMS_Y = (EXTRACT_FEATURE_AREA+STRIDE-1)/STRIDE; /// this should be integer.Discreteization factor must be a factor of BIN_WIDTH and BIN_LENGTH
+    std::vector<double> params(TOTAL_PARAMS, 0);
+    for (int i = 0; i < TOTAL_PARAMS; i++) {
+        read_file >> params[i];
         // std::cout<<params[i]<<"\n";
     }
-    Base *x;
-    if(algo_name=="first_fit"){
-        std::cout<<"running first_fit.."<<episode<<" "<<seed<<"\n";
+    Base* x;
+    if (algo_name == "first_fit") {
+        std::cout << "running first_fit.." << episode << " " << seed << "\n";
         x = new First_Fit(gb, simulator);
-    }
-    else if(algo_name=="floor_building"){
-        std::cout<<"running floor_building.."<<episode<<" "<<seed<<"\n";
+    } else if (algo_name == "floor_building") {
+        std::cout << "running floor_building.." << episode << " " << seed << "\n";
         x = new Floor_Building(gb, simulator);
-    }
-    else if(algo_name=="first_fit_icp"){
-        std::cout<<"running first_fit_icp.."<<episode<<" "<<seed<<"\n";
+    } else if (algo_name == "first_fit_icp") {
+        std::cout << "running first_fit_icp.." << episode << " " << seed << "\n";
+
         x = new First_Fit_Icp(gb, simulator);
-    }
-    else if(algo_name=="floor_building_icp"){
-        std::cout<<"running floor_building_icp.."<<episode<<" "<<seed<<"\n";
+    } else if (algo_name == "floor_building_icp") {
+        std::cout << "running floor_building_icp.." << episode << " " << seed << "\n";
         x = new Floor_Building_Icp(gb, simulator);
-    }
-    else if(algo_name=="smart_algo"){
-        std::cout<<"running smart algorithm.."<<episode<<" "<<seed<<"\n";
+    } else if (algo_name == "smart_algo") {
+        std::cout << "running smart algorithm.." << episode << " " << seed << "\n";
         x = new Smart_Algorithm(gb, simulator, params);
-    }
-    else if(algo_name=="smart_algo_with_lookahead"){
-        std::cout<<"running smart algorithm with lookahead.."<<episode<<" "<<seed<<"\n";
+    } else if (algo_name == "smart_algo_with_lookahead") {
+        std::cout << "running smart algorithm with lookahead.." << episode << " " << seed << "\n";
         x = new Smart_Algorithm_WithLookahead(gb, simulator, params);
-        lookahead=2;
-    }
-    else if(algo_name=="smart_algo_without_icp_bcp"){
-        std::cout<<"running smart algorithm without icp bcp.."<<episode<<" "<<seed<<"\n";
+        lookahead = 2;
+    } else if (algo_name == "smart_algo_without_icp_bcp") {
+        std::cout << "running smart algorithm without icp bcp.." << episode << " " << seed << "\n";
         x = new Smart_Algorithm_WithoutICP_BCP(gb, simulator, params);
-        lookahead=0;
+        lookahead = 0;
     }
     //Base* x = new Smart_Algorithm_WithLookahead(gb, simulator, params);
     //Base* x = new Random_Algorithm(gb, simulator);
     //Base* x = new Smart_Algorithm2(gb, simulator, params);
     performance_metric pm = x->execute(simulator, lookahead);
-    std::cout<<pm.efficiency<<std::endl;
+    std::cout << pm.efficiency << std::endl;
 
     delete (x);
     read_file.close();
     return pm;
 }
 
-
-int main(int argc,char** argv)
-{
+int main(int argc, char** argv) {
     std::string read_file_name = argv[1];
 
     std::string write_file_name = argv[2];
     std::string algo_name = argv[5];
     int debug = std::stoi(argv[6]);
-    if(!debug)
+    if (!debug)
         std::cout.setstate(std::ios_base::failbit);
     write_file.open(write_file_name);
     //std::thread threadHandles[episode];
     clock_t start_time = clock();
-    int episode = std::stoi(argv[4]);;
+    int episode = std::stoi(argv[4]);
+    ;
     int seed = std::stoi(argv[3]);
     //std::thread threadHandles[episode];
     double efficiency = 0;
@@ -108,25 +99,22 @@ int main(int argc,char** argv)
     double total_boxes = 0;
     double boxes_put = 0;
     int num_threads = 1;
-    bool constant_seed=0;
-    double mineff=INT_MAX;
-    int minseed=-1;
-    for (int k = 0; k < episode / num_threads; k++)
-    {
+    bool constant_seed = 0;
+    double mineff = INT_MAX;
+    int minseed = -1;
+    for (int k = 0; k < episode / num_threads; k++) {
         std::vector<std::future<performance_metric>> threadHandles(num_threads);
-        for (int i = 0; i < num_threads; i++)
-        {
-            threadHandles[i] = std::async(worker,algo_name, seed, k*num_threads+i, read_file_name);
-            if(!constant_seed)seed++;
+        for (int i = 0; i < num_threads; i++) {
+            threadHandles[i] = std::async(worker, algo_name, seed, k * num_threads + i, read_file_name);
+            if (!constant_seed) seed++;
             //threadHandles[i] = std::thread(worker, i);
         }
 
-        for (long long i = 0; i < num_threads; i++)
-        {
+        for (long long i = 0; i < num_threads; i++) {
             performance_metric pm = threadHandles[i].get();
-            if(pm.efficiency<mineff){
-                mineff=pm.efficiency;
-                minseed=seed;
+            if (pm.efficiency < mineff) {
+                mineff = pm.efficiency;
+                minseed = seed;
                 //minep=k*num_threads+i;
             }
             efficiency += pm.efficiency;
@@ -148,9 +136,8 @@ int main(int argc,char** argv)
     std::cout << "min seed"
               << " " << minseed << "\n";
 
-    
     clock_t end_time = clock();
-    
+
     float time_passed = float(end_time - start_time) / (float)CLOCKS_PER_SEC;
     // std::cout << time_passed / num_threads << "\n";
     write_file << efficiency / episode << "\n";

@@ -6,6 +6,7 @@ Take features from the area around the box where it is placed.
 
 #include <algorithm>
 #include <fstream>
+
 #include "base.h"
 
 class Smart_Algorithm2 : public Base {
@@ -27,7 +28,7 @@ class Smart_Algorithm2 : public Base {
         auto icpbcp_list = cur_bin.get_icbp_list();
         auto cur_state = cur_bin.get_state();
         int lx = dim.x, ly = dim.y, lz = dim.z;
-        double max_score=-DBL_MAX;
+        double max_score = -DBL_MAX;
         int idx = -1;
         int ori = -1;
         for (int i = 0; i < icpbcp_list.size(); i++) {
@@ -52,7 +53,7 @@ class Smart_Algorithm2 : public Base {
                     }
                 }
             }
-            vector_3d rotated_dim={dim.y, dim.x, dim.z};
+            vector_3d rotated_dim = {dim.y, dim.x, dim.z};
             lx = rotated_dim.x, ly = rotated_dim.y, lz = rotated_dim.z;
             if (check_without_precomputation(cur_state, {icpbcp_list[i].first.x, icpbcp_list[i].first.y}, rotated_dim)) {
                 auto icp_bcp = icpbcp_list[i];
@@ -90,12 +91,12 @@ class Smart_Algorithm2 : public Base {
         std::vector<std::pair<vector_3d, vector_3d>> icpbcp_list = simulator.bin_instances[bin_id].get_icbp_list();
         //precompute_max_min(cur_state);
         auto idx_ori = get_action(simulator.bin_instances[bin_id], box);
-        auto icp_bcp=simulator.bin_instances[bin_id].get_icbp_list()[idx_ori.first].first;
+        auto icp_bcp = simulator.bin_instances[bin_id].get_icbp_list()[idx_ori.first].first;
         // std::cout << idx_ori.first << "\n";
         if (idx_ori.first >= 0) {
-            int height=simulator.step(bin_id, idx_ori.first, box, idx_ori.second);
-            write_file<<box.x<<" "<<box.y<<" "<<box.z<<" "<<icp_bcp.x<<" "<<icp_bcp.y<<" "<<height<<" "<<idx_ori.second<<"\n"; 
-            return height!=-1;
+            int height = simulator.step(bin_id, idx_ori.first, box, idx_ori.second);
+            write_file << box.x << " " << box.y << " " << box.z << " " << icp_bcp.x << " " << icp_bcp.y << " " << height << " " << idx_ori.second << "\n";
+            return height != -1;
         } else {
             //std::cout << "could not place the box" << std::endl;
         }
@@ -110,14 +111,14 @@ class Smart_Algorithm2 : public Base {
         return sum;
     }
 
-    void extract_pool_features(std::vector<std::vector<int>> &after_state,int start_x,int end_x,int start_y,int end_y, eval_feature &x, int stride, int filter_size) {
-        for(int i=start_x;i<end_x;i+=stride){
-            for(int j=start_y;j<end_y;j+=stride){
+    void extract_pool_features(std::vector<std::vector<int>> &after_state, int start_x, int end_x, int start_y, int end_y, eval_feature &x, int stride, int filter_size) {
+        for (int i = start_x; i < end_x; i += stride) {
+            for (int j = start_y; j < end_y; j += stride) {
                 int temp_max = 0;
                 int temp_min = 0;
                 double mean_height = 0;
                 int cell_count = 0;
-                for(int inner_i = i;inner_i<=std::min(i+filter_size-1,end_x);inner_i++){
+                for (int inner_i = i; inner_i <= std::min(i + filter_size - 1, end_x); inner_i++) {
                     for (int inner_j = j; inner_j <= std::min(j + filter_size - 1, end_y); inner_j++) {
                         temp_max = std::max(temp_max, after_state[inner_i][inner_j]);
                         temp_min = std::min(temp_min, after_state[inner_i][inner_j]);
@@ -132,59 +133,70 @@ class Smart_Algorithm2 : public Base {
         }
     }
 
-    void extract_border_feature(std::vector<std::vector<int>> &after_state,vector_3d &dim, int pos_x, int pos_y, eval_feature &x){
-        int sum=0;
-        for(int i=pos_x;i<pos_x+dim.x;i++){
-            if(pos_y>0){
-                sum+=abs(after_state[i][pos_y]-after_state[i][pos_y-1]);
-            }
-            if(pos_y<BIN_LENGTH-1){
-                sum+=abs(after_state[i][pos_y+1]-after_state[i][pos_y]);
-            }
-        }
-        for(int i=pos_y;i<pos_y+dim.y;i++){
-            if(pos_x>0){
-                sum+=abs(after_state[pos_x][i]-after_state[pos_x-1][i]);
-            }
-            if(pos_x<BIN_WIDTH-1){
-                sum+=abs(after_state[pos_x+1][i]-after_state[pos_x][i]);
+    void extract_border_feature(std::vector<std::vector<int>> &after_state, vector_3d &dim, int pos_x, int pos_y, eval_feature &x) {
+        int sum = 0;
+        for (int i = pos_x; i < pos_x + dim.x; i += 5) {
+            if (pos_y > 0) {
+                x.border_features.push_back(abs(after_state[i][pos_y] - after_state[i][pos_y - 1]));
+            } else {
+                x.border_features.push_back(0);
             }
         }
-        x.border_diff_height=sum;
+        for (int i = pos_x; i < pos_x + dim.x; i += 5) {
+            if (pos_y + dim.y - 1 < BIN_LENGTH - 1) {
+                x.border_features.push_back(abs(after_state[i][pos_y + dim.y] - after_state[i][pos_y + dim.y - 1]));
+            } else {
+                x.border_features.push_back(0);
+            }
+        }
+        for (int i = pos_y; i < pos_y + dim.y; i += 5) {
+            if (pos_x > 0) {
+                x.border_features.push_back(abs(after_state[pos_x][i] - after_state[pos_x - 1][i]));
+            } else {
+                x.border_features.push_back(0);
+            }
+        }
+        for (int i = pos_y; i < pos_y + dim.y; i += 5) {
+            if (pos_x + dim.x - 1 < BIN_WIDTH - 1) {
+                x.border_features.push_back(abs(after_state[pos_x + dim.x][i] - after_state[pos_x + dim.x - 1][i]));
+            } else {
+                x.border_features.push_back(0);
+            }
+        }
     }
-
     std::vector<double> extract_state_features(Bin cur_bin, eval_feature &x, vector_3d &dim, int pos_x, int pos_y) {
-        int start_x=std::max(0,pos_x+dim.x/2-MAX_BOX_WIDTH/2-10);
-        int start_y=std::max(0, pos_y+dim.y/2-MAX_BOX_LENGTH/2-10);
-        int end_x = std::min(BIN_WIDTH, pos_x + dim.x / 2 + MAX_BOX_WIDTH / 2+11);
-        int end_y = std::min(BIN_LENGTH, pos_y + dim.y / 2 + MAX_BOX_LENGTH / 2+11);
+        int start_x = std::max(0, pos_x + dim.x / 2 - MAX_BOX_WIDTH / 2 - 10);
+        int start_y = std::max(0, pos_y + dim.y / 2 - MAX_BOX_LENGTH / 2 - 10);
+        int end_x = std::min(BIN_WIDTH, pos_x + dim.x / 2 + MAX_BOX_WIDTH / 2 + 11);
+        int end_y = std::min(BIN_LENGTH, pos_y + dim.y / 2 + MAX_BOX_LENGTH / 2 + 11);
 
-        if(start_x==0)
-            end_x=EXTRACT_FEATURE_AREA;
-        if(start_y==0)
-            end_y=EXTRACT_FEATURE_AREA;
-        if(end_y==BIN_LENGTH)
-            start_y=BIN_LENGTH-EXTRACT_FEATURE_AREA;
-        if(end_x==BIN_WIDTH)
-            start_x=BIN_WIDTH-EXTRACT_FEATURE_AREA;
+        if (start_x == 0)
+            end_x = EXTRACT_FEATURE_AREA;
+        if (start_y == 0)
+            end_y = EXTRACT_FEATURE_AREA;
+        if (end_y == BIN_LENGTH)
+            start_y = BIN_LENGTH - EXTRACT_FEATURE_AREA;
+        if (end_x == BIN_WIDTH)
+            start_x = BIN_WIDTH - EXTRACT_FEATURE_AREA;
 
         auto cur_state = cur_bin.get_state();
         std::vector<double> features;
-        extract_pool_features(cur_state, start_x,start_y,end_x, end_y,x, STRIDE, FILTER_SIZE);
+        features.push_back(1);  //bias
+        features.push_back(x.holes / (0.5 * BIN_HEIGHT * BIN_LENGTH * BIN_WIDTH));
+        extract_pool_features(cur_state, start_x, start_y, end_x, end_y, x, STRIDE, FILTER_SIZE);
         extract_border_feature(cur_state, dim, pos_x, pos_y, x);
-        for(int i:x.max_pool){
-            features.push_back(i*1.0/BIN_HEIGHT);
+        for (int i : x.max_pool) {
+            features.push_back(i * 1.0 / BIN_HEIGHT);
         }
         for (int i : x.min_pool) {
-            features.push_back(i*1.0/BIN_HEIGHT);
+            features.push_back(i * 1.0 / BIN_HEIGHT);
         }
         for (int i : x.avg_pool) {
-            features.push_back(i*1.0/BIN_HEIGHT);
+            features.push_back(i * 1.0 / BIN_HEIGHT);
         }
-        features.push_back(x.holes/(0.5*BIN_HEIGHT*BIN_LENGTH*BIN_WIDTH));
-        double max_border_feature_val=2.0*(MAX_BOX_LENGTH+MAX_BOX_WIDTH)*BIN_HEIGHT;
-        features.push_back(x.border_diff_height/max_border_feature_val);
-        features.push_back(1); //bias
+        for (int i : x.border_features) {
+            features.push_back(i * 1.0 / BIN_HEIGHT);
+        }
         return features;
     }
 
@@ -207,7 +219,7 @@ class Smart_Algorithm2 : public Base {
                 put_box(simulator, simulator.bin_instances.size() - 1, box);
             }
         }
-         write_file.close();
+        write_file.close();
         return simulator.get_performance_metric(1);
     }
 };

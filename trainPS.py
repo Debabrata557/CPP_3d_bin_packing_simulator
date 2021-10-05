@@ -77,11 +77,18 @@ if __name__ == '__main__':
     BIN_LENGTH=180
     # NPARAMS_X = (120+STRIDE-1)//STRIDE
     # NPARAMS_Y = (180+STRIDE-1)//STRIDE
-    NPARAMS_X = ((BIN_WIDTH//2) + STRIDE - 1) // STRIDE
-    NPARAMS_Y = ((BIN_LENGTH//2) + STRIDE - 1) // STRIDE
+    NPARAMS_X = ((BIN_WIDTH // 2) + STRIDE - 1) // STRIDE;  #with symmetry
+    NPARAMS_Y = ((BIN_LENGTH // 2) + STRIDE - 1) // STRIDE
+
+    POOL_PARAMS = 3 * NPARAMS_X * NPARAMS_Y
+    MAX_BOX_LENGTH=60
+    MAX_BOX_WIDTH=60
+    BOUNDARY_STRIDE = 10
+    BOUNDARY_PARAMS = MAX_BOX_LENGTH * 2 // BOUNDARY_STRIDE + 2 * MAX_BOX_WIDTH // BOUNDARY_STRIDE
+
+    TOTAL_PARAMS = POOL_PARAMS + BOUNDARY_PARAMS + 2
     # NPARAMS_X = (EXTRACT_FEATURE_AREA+STRIDE-1)//STRIDE
     # NPARAMS_Y = (EXTRACT_FEATURE_AREA+STRIDE-1)//STRIDE
-    NPARAMS = 3*NPARAMS_X*NPARAMS_Y+1+1+1
     # print('Number of parameters:', NPARAMS)
     directory = "test_dir"
     NPOPULATION = 25
@@ -318,7 +325,7 @@ if __name__ == '__main__':
     #         sys.exit()
     # else:
     solver = CMAES(
-            NPARAMS,
+            TOTAL_PARAMS,
             popsize=NPOPULATION,
             weight_decay=0.01,
             sigma_init=0.5,

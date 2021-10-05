@@ -248,16 +248,16 @@ class Smart_Algorithm : public Base {
             if(pos_y>0){
                 sum+=abs(after_state[i][pos_y]-after_state[i][pos_y-1]);
             }
-            if(pos_y<BIN_LENGTH-1){
-                sum+=abs(after_state[i][pos_y+1]-after_state[i][pos_y]);
+            if(pos_y+dim.y-1<BIN_LENGTH-1){
+                sum+=abs(after_state[i][pos_y+dim.y]-after_state[i][pos_y+dim.y-1]);
             }
         }
         for(int i=pos_y;i<pos_y+dim.y;i++){
             if(pos_x>0){
                 sum+=abs(after_state[pos_x][i]-after_state[pos_x-1][i]);
             }
-            if(pos_x<BIN_WIDTH-1){
-                sum+=abs(after_state[pos_x+1][i]-after_state[pos_x][i]);
+            if(pos_x+dim.x-1<BIN_WIDTH-1){
+                sum+=abs(after_state[pos_x+dim.x][i]-after_state[pos_x+dim.x-1][i]);
             }
         }
         x.border_diff_height=sum;

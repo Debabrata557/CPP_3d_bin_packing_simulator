@@ -78,7 +78,7 @@ performance_metric worker(std::string algo_name, int seed, int episode, std::str
     //Base* x = new Random_Algorithm(gb, simulator);
     //Base* x = new Smart_Algorithm2(gb, simulator, params);
     performance_metric pm = x->execute(simulator, lookahead);
-    std::cout<<pm.efficiency<<std::endl;
+    //std::cout<<pm.efficiency<<std::endl;
 
     delete (x);
     read_file.close();
@@ -92,7 +92,9 @@ int main(int argc,char** argv)
 
     std::string write_file_name = argv[2];
     std::string algo_name = argv[5];
-    
+    int debug = std::stoi(argv[6]);
+    if(!debug)
+        std::cout.setstate(std::ios_base::failbit);
     write_file.open(write_file_name);
     //std::thread threadHandles[episode];
     clock_t start_time = clock();
@@ -133,16 +135,16 @@ int main(int argc,char** argv)
         }
         // std::cout << k << "\n";
     }
-    // std::cout << "avg efficiency"
-    //           << " " << efficiency / episode << " ";
-    // std::cout << "avg no of bins"
-    //           << " " << no_of_bins / episode << " ";
-    // std::cout << "average total boxes"
-    //           << " " << total_boxes / episode << " ";
-    // std::cout << "min efficiency"
-    //           << " " << mineff << "\n";
-    // std::cout << "min seed"
-    //           << " " << minseed << "\n";
+    std::cout << "avg efficiency"
+              << " " << efficiency / episode << " ";
+    std::cout << "avg no of bins"
+              << " " << no_of_bins / episode << " ";
+    std::cout << "average total boxes"
+              << " " << total_boxes / episode << " ";
+    std::cout << "min efficiency"
+              << " " << mineff << "\n";
+    std::cout << "min seed"
+              << " " << minseed << "\n";
 
     
     clock_t end_time = clock();

@@ -70,8 +70,8 @@ if __name__ == '__main__':
 
     # NUM_SIMULATIONS = args['num_simulations']
     client = Client()
-    FILTER_SIZE = 10
-    STRIDE = 10
+    FILTER_SIZE = 20
+    STRIDE = 20
     EXTRACT_FEATURE_AREA=70
     BIN_WIDTH=120
     BIN_LENGTH=180
@@ -282,7 +282,8 @@ if __name__ == '__main__':
         filename_in = f'{directory}/weights_{gen}.txt'
         filename_out = f'{directory}/result_{gen}.txt'
         save_weights_to_file(weights,filename_in)
-        return run_subproccess(['./build/run',filename_in,filename_out,str(seed),str(episode), algo_name])
+        debug=0
+        return run_subproccess(['./build/run',filename_in,filename_out,str(seed),str(episode), algo_name, str(debug)])
 
 
     # if args['test']:

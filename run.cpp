@@ -50,6 +50,10 @@ performance_metric worker(std::string algo_name, int seed, int episode, std::str
         std::cout<<"running first_fit.."<<episode<<" "<<seed<<"\n";
         x = new First_Fit(gb, simulator);
     }
+    else if(algo_name=="floor_building"){
+        std::cout<<"running floor_building.."<<episode<<" "<<seed<<"\n";
+        x = new Floor_Building(gb, simulator);
+    }
     else if(algo_name=="first_fit_icp"){
         std::cout<<"running first_fit_icp.."<<episode<<" "<<seed<<"\n";
         x = new First_Fit_Icp(gb, simulator);
@@ -72,13 +76,11 @@ performance_metric worker(std::string algo_name, int seed, int episode, std::str
         x = new Smart_Algorithm_WithoutICP_BCP(gb, simulator, params);
         lookahead=0;
     }
-    // Base *x = new First_Fit(gb, bin_instances);
-    // Base *x = new Floor_Building(gb, bin_instances);
     //Base* x = new Smart_Algorithm_WithLookahead(gb, simulator, params);
     //Base* x = new Random_Algorithm(gb, simulator);
     //Base* x = new Smart_Algorithm2(gb, simulator, params);
     performance_metric pm = x->execute(simulator, lookahead);
-    //std::cout<<pm.efficiency<<std::endl;
+    std::cout<<pm.efficiency<<std::endl;
 
     delete (x);
     read_file.close();

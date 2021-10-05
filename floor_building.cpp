@@ -19,7 +19,7 @@ private:
     {
         int lx = dim.x, ly = dim.y, lz = dim.z;
         vector_3d pos_orientation = {-40, -40, 0};
-        int min_height = 200;
+        int min_height = INT_MAX;
         // #print('checking new dim: ', lx, ',', ly, ',', lz)
         // #bin_packing_helper.printStates(state)
         //std::cout<<"precomputation starting"<<std::endl;
@@ -69,7 +69,7 @@ public:
         }
         return 0;
     }
-    performance_metric execute(Sim &simulator, int max_bin_limit, int max_open_bins)
+    performance_metric execute(Sim &simulator, int lookahead)
     {
         simulator.size_of_box_stream = boxes.size();
         for (auto box : boxes)
@@ -93,6 +93,6 @@ public:
             }
         }
 
-        return simulator.get_performance_metric();
+        return simulator.get_performance_metric(1);
     }
 };

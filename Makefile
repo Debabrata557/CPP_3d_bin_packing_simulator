@@ -18,5 +18,6 @@ $(DIR)/%.o: %.cpp
 
 all clean:
 	@rm -rf $(DIR)
+	rm run sim test bin sim base details first_fit_icp floor_building_icp  smart_algo_withlookahead smart_algorithm  smart_algorithm_without_icp_bcp 
 target: dependencies
 	action

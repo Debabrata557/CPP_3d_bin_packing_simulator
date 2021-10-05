@@ -123,18 +123,24 @@ class Smart_Algorithm : public Base {
 
         for (int i = BIAS_HOLE; i < POOL_PARAMS + BIAS_HOLE; i++, j++) {
             sum += features[j] * params[i];
+            assert(j<features.size());
         }
         for (int i = BIAS_HOLE; i < POOL_PARAMS + BIAS_HOLE; i++, j++) {
             sum += features[j] * params[i];
+            assert(j<features.size());
         }
         for (int i = BIAS_HOLE; i < POOL_PARAMS + BIAS_HOLE; i++, j++) {
             sum += features[j] * params[i];
+            assert(j<features.size());
         }
         for (int i = BIAS_HOLE; i < POOL_PARAMS + BIAS_HOLE; i++, j++) {
             sum += features[j] * params[i];
+            assert(j<features.size());
         }
         for (int i = BIAS_HOLE + POOL_PARAMS; i < BOUNDARY_PARAMS + BIAS_HOLE + POOL_PARAMS; i++, j++) {
             sum += features[j] * params[i];
+            //std::cout<<j<<" "<<features.size()<<std::endl;
+            assert(j<features.size());
         }
         // std::cout<<sum<<"\n";
         return sum;
@@ -325,7 +331,7 @@ class Smart_Algorithm : public Base {
             features.push_back(i * 1.0 / BIN_HEIGHT);
         }
         int cur_size = features.size();
-        for (int i = cur_size; i < TOTAL_PARAMS; i++) {
+        for (int i = cur_size; i < BIAS_HOLE+4*POOL_PARAMS+BOUNDARY_PARAMS; i++) {
             features.push_back(0);
         }
         return features;

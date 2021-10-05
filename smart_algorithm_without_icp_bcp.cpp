@@ -314,7 +314,7 @@ class Smart_Algorithm_WithoutICP_BCP : public Base {
             features.push_back(i * 1.0 / BIN_HEIGHT);
         }
         int cur_size = features.size();
-        for (int i = cur_size; i < TOTAL_PARAMS; i++) {
+        for (int i = cur_size; i < BIAS_HOLE+4*POOL_PARAMS+BOUNDARY_PARAMS; i++) {
             features.push_back(0);
         }
         return features;

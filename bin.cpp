@@ -43,19 +43,24 @@ int Bin::update_state(std::pair<int, int> start_corner, vector_3d dim) {
 }
 
 bool Bin::is_overlapping(std::pair<vector_3d, vector_3d> icpbcp, vector_3d pos, vector_3d size) {
-    for (int i = 0; i <= 1; i++) {
-        for (int j = 0; j <= 1; j++) {
-            for (int k = 0; k <= 1; k++) {
-                int cur_x = pos.x + i * size.x;
-                int cur_y = pos.y + j * size.y;
-                int cur_z = pos.z + k * size.z;
-                if (cur_x >= icpbcp.first.x && cur_x <= icpbcp.second.x && cur_y >= icpbcp.first.y && cur_y <= icpbcp.second.y && cur_z >= icpbcp.first.z && cur_z <= icpbcp.second.z) {
-                    return true;
-                }
-            }
-        }
-    }
-    return false;
+    if(pos.x>=icpbcp.second.x || pos.y>=icpbcp.second.y || pos.z>=icpbcp.second.z)
+        return false;
+    if(pos.x+size.x<=icpbcp.first.x || pos.y+size.y<=icpbcp.first.y || pos.z+size.z<=icpbcp.first.z)
+        return false;
+    return true;
+    // for (int i = 0; i <= 1; i++) {
+    //     for (int j = 0; j <= 1; j++) {
+    //         for (int k = 0; k <= 1; k++) {
+    //             int cur_x = pos.x + i * size.x;
+    //             int cur_y = pos.y + j * size.y;
+    //             int cur_z = pos.z + k * size.z;
+    //             if (cur_x >= icpbcp.first.x && cur_x <= icpbcp.second.x && cur_y >= icpbcp.first.y && cur_y <= icpbcp.second.y && cur_z >= icpbcp.first.z && cur_z <= icpbcp.second.z) {
+    //                 return true;
+    //             }
+    //         }
+    //     }
+    // }
+    // return false;
 }
 
 void Bin::set_open() {
@@ -123,10 +128,12 @@ int Bin::update_icpbcp_list(vector_3d pos, vector_3d dim) {
         icpbcp_list = temp_icpbcp_list;
 
         for (auto it : icpbcp_st) {
-            icpbcp_list.push_back(it);
+            int x=it.first.x, y=it.first.y, z=it.first.z;
+            if(z==bin_state[x][y] && ((x<=0 || bin_state[x][y]!=bin_state[x-1][y]) || (y<=0 || bin_state[x][y]!=bin_state[x][y-1])))
+                icpbcp_list.push_back(it);
         }
-
-        Bin::set_open();
+        //std::cout<<icpbcp_list.size()<<std::endl;
+        //Bin::set_open();
 
     } catch (const std::exception &e) {
         std::cerr << e.what() << '\n';

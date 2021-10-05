@@ -60,6 +60,7 @@ typedef struct eval_feature {
     std::vector<double> min_pool;
     std::vector<double> avg_pool;
     std::vector<double> border_features;
+    double border_diff_height;
     double holes;
 } eval_feature;
 bool operator<(const vector_3d &a, const vector_3d &b);

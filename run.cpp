@@ -62,7 +62,7 @@ performance_metric worker(std::string algo_name, int seed, int episode, std::str
     } else if (algo_name == "smart_algo_with_lookahead") {
         std::cout << "running smart algorithm with lookahead.." << episode << " " << seed << "\n";
         x = new Smart_Algorithm_WithLookahead(gb, simulator, params);
-        lookahead = 2;
+        lookahead = 1;
     } else if (algo_name == "smart_algo_without_icp_bcp") {
         std::cout << "running smart algorithm without icp bcp.." << episode << " " << seed << "\n";
         x = new Smart_Algorithm_WithoutICP_BCP(gb, simulator, params);
@@ -134,7 +134,7 @@ int main(int argc, char** argv) {
     std::cout << "min efficiency"
               << " " << mineff << "\n";
     std::cout << "min seed"
-              << " " << minseed << "\n";
+              << " " << minseed-1 << "\n";
 
     clock_t end_time = clock();
 

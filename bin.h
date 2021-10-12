@@ -12,7 +12,7 @@ class Bin
 {
 private:
     std::vector<std::vector<int>> bin_state;
-    std::vector<std::pair<vector_3d, vector_3d>> icpbcp_list;
+    std::vector<vector_3d> icpbcp_list;
     bool is_overlapping(std::pair<vector_3d, vector_3d> icpbcp, vector_3d size, vector_3d pos);
     void set_open();
 
@@ -27,7 +27,7 @@ public:
     void print_state();
     bool is_open();
     std::vector<std::vector<int>> get_state();
-    std::vector<std::pair<vector_3d, vector_3d>>& get_icbp_list();
+    std::vector<vector_3d>& get_icbp_list();
 };
 
 #endif

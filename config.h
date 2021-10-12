@@ -30,9 +30,9 @@ const int NPARAMS_Y = ((BIN_LENGTH / 2) + STRIDE - 1) / STRIDE;
 
 const int POOL_PARAMS = 3 * NPARAMS_X * NPARAMS_Y;
 
-const int BOUNDARY_STRIDE = 10;
+const int BOUNDARY_STRIDE = 5;
 const int BOUNDARY_PARAMS = MAX_BOX_LENGTH * 2 / BOUNDARY_STRIDE + 2 * MAX_BOX_WIDTH / BOUNDARY_STRIDE;
-const int BIAS_HOLE = 2;
+const int BIAS_HOLE = 5;
 const int TOTAL_PARAMS = POOL_PARAMS + BOUNDARY_PARAMS + BIAS_HOLE;
 
 typedef struct vector_3d {
@@ -71,6 +71,7 @@ void print_list_vector_3d(std::vector<vector_3d> &a);
 void print_pair_vector_3d(std::pair<vector_3d, vector_3d> &a);
 void print_list_pair_vector_3d(std::vector<std::pair<vector_3d, vector_3d>> &a);
 void print_state(std::vector<std::vector<int>> &a);
+std::pair<int, int> get_start_point(vector_3d pos, int orientation, vector_3d dim);
 #define DEBUG_ENABLED 1
 #if DEBUG_ENABLED
 #define DEBUG(a) cout << a

@@ -1,5 +1,6 @@
 #include "generate_box.h"
 #include<chrono>
+#include<algorithm>
 
 GenerateBox::GenerateBox()
 {
@@ -7,6 +8,7 @@ GenerateBox::GenerateBox()
 GenerateBox::GenerateBox(int seed, std::string algorithm, int number)
 {
     // generator = std::mt19937(seed);
+    this->seed=seed;
     generator = std::mt19937(seed);
     cpp_rand = std::uniform_int_distribution<int>(0, 1000);
     max_size = {MAX_BOX_WIDTH, MAX_BOX_LENGTH, MAX_BOX_HEIGHT};
@@ -33,9 +35,9 @@ int GenerateBox::generate_random(int number)
     {
         for (int i = 0; i < number; i++)
         {
-            int z = MIN_BOX_HEIGHT + (cpp_rand(generator) % (MAX_BOX_HEIGHT - MIN_BOX_HEIGHT));
-            int x = MIN_BOX_WIDTH + (cpp_rand(generator) % (MAX_BOX_WIDTH - MIN_BOX_WIDTH));
-            int y = MIN_BOX_LENGTH + (cpp_rand(generator) % (MAX_BOX_LENGTH - MIN_BOX_LENGTH));
+            int z = MIN_BOX_HEIGHT + (cpp_rand(generator) % (MAX_BOX_HEIGHT - MIN_BOX_HEIGHT+1));
+            int x = MIN_BOX_WIDTH + (cpp_rand(generator) % (MAX_BOX_WIDTH - MIN_BOX_WIDTH+1));
+            int y = MIN_BOX_LENGTH + (cpp_rand(generator) % (MAX_BOX_LENGTH - MIN_BOX_LENGTH+1));
             stream_of_boxes.push_back({x, y, z});
         }
     }
@@ -99,8 +101,11 @@ int GenerateBox::generate_cut1(int repeat)
         return 0;
     }
     auto temp_boxes = stream_of_boxes;
-    for (int i = 0; i < repeat; i++)
+    for (int i = 0; i < repeat; i++){
         stream_of_boxes.insert(stream_of_boxes.end(), temp_boxes.begin(), temp_boxes.end());
+    } 
+    // if(repeat)
+    //     std::shuffle(stream_of_boxes.begin(), stream_of_boxes.end(), generator);
     return 1;
 }
 

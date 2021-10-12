@@ -21,18 +21,22 @@
 std::ifstream read_file;
 std::ofstream write_file;
 
-performance_metric worker(std::string algo_name, int seed, int episode, std::string read_file_name)  //episode number is seed
+performance_metric worker(std::string algo_name, int seed, int episode, std::string read_file_name, std::string boxGeneration, int openBinCount)  //episode number is seed
 {
-    // GenerateBox gb = GenerateBox(seed, "random", 2000);
-    GenerateBox gb = GenerateBox(seed, "cut1", 0);
+    GenerateBox gb;
+    if(boxGeneration=="cut1")
+        gb = GenerateBox(seed, "cut1", 0);
+    else
+        gb = GenerateBox(seed, "random", 2000);
+    
     read_file.open(read_file_name);
     std::vector<vector_3d> boxes = gb.get_stream_of_boxes();
     // std::cout << boxes.size() << "\n";
     int bin_limit = 1;
-    int max_open_bin = 1;
-    int lookahead = 1;
+    int max_open_bin = openBinCount;
+    int lookahead;
     Sim simulator = Sim();
-    //simulator.set_limits(bin_limit, max_open_bin);
+    simulator.set_limits(bin_limit, max_open_bin);
     // int NPARAMS_X = (BIN_WIDTH+STRIDE-1)/STRIDE; //without symmetry
     // int NPARAMS_Y = (BIN_LENGTH+STRIDE-1)/STRIDE;
     // int NPARAMS_X = (EXTRACT_FEATURE_AREA+STRIDE-1)/STRIDE;
@@ -43,31 +47,36 @@ performance_metric worker(std::string algo_name, int seed, int episode, std::str
         // std::cout<<params[i]<<"\n";
     }
     Base* x;
-    if (algo_name == "first_fit") {
-        std::cout << "running first_fit.." << episode << " " << seed << "\n";
-        x = new First_Fit(gb, simulator);
-    } else if (algo_name == "floor_building") {
-        std::cout << "running floor_building.." << episode << " " << seed << "\n";
-        x = new Floor_Building(gb, simulator);
-    } else if (algo_name == "first_fit_icp") {
+    if (algo_name == "first_fit_icp") {
         std::cout << "running first_fit_icp.." << episode << " " << seed << "\n";
-
         x = new First_Fit_Icp(gb, simulator);
-    } else if (algo_name == "floor_building_icp") {
-        std::cout << "running floor_building_icp.." << episode << " " << seed << "\n";
-        x = new Floor_Building_Icp(gb, simulator);
-    } else if (algo_name == "smart_algo") {
+    }
+    else if (algo_name == "smart_algo") {
         std::cout << "running smart algorithm.." << episode << " " << seed << "\n";
         x = new Smart_Algorithm(gb, simulator, params);
-    } else if (algo_name == "smart_algo_with_lookahead") {
+    }
+    else if (algo_name == "smart_algo_with_lookahead") {
         std::cout << "running smart algorithm with lookahead.." << episode << " " << seed << "\n";
         x = new Smart_Algorithm_WithLookahead(gb, simulator, params);
         lookahead = 1;
-    } else if (algo_name == "smart_algo_without_icp_bcp") {
-        std::cout << "running smart algorithm without icp bcp.." << episode << " " << seed << "\n";
-        x = new Smart_Algorithm_WithoutICP_BCP(gb, simulator, params);
-        lookahead = 0;
     }
+    // else if (algo_name == "floor_building") {
+    //     std::cout << "running floor_building.." << episode << " " << seed << "\n";
+    //     x = new Floor_Building(gb, simulator);
+    // }
+    // else  if (algo_name == "first_fit") {
+    //     std::cout << "running first_fit.." << episode << " " << seed << "\n";
+    //     x = new First_Fit(gb, simulator);
+    // }
+    // else if (algo_name == "floor_building_icp") {
+    //     std::cout << "running floor_building_icp.." << episode << " " << seed << "\n";
+    //     x = new Floor_Building_Icp(gb, simulator);
+    // }
+    // else if (algo_name == "smart_algo_without_icp_bcp") {
+    //     std::cout << "running smart algorithm without icp bcp.." << episode << " " << seed << "\n";
+    //     x = new Smart_Algorithm_WithoutICP_BCP(gb, simulator, params);
+    //     lookahead = 0;
+    // }
     //Base* x = new Smart_Algorithm_WithLookahead(gb, simulator, params);
     //Base* x = new Random_Algorithm(gb, simulator);
     //Base* x = new Smart_Algorithm2(gb, simulator, params);
@@ -84,7 +93,9 @@ int main(int argc, char** argv) {
 
     std::string write_file_name = argv[2];
     std::string algo_name = argv[5];
-    int debug = std::stoi(argv[6]);
+    std::string boxGeneration = argv[6];
+    int openBinCount = std::stoi(argv[7]);
+    int debug = std::stoi(argv[8]);
     if (!debug)
         std::cout.setstate(std::ios_base::failbit);
     write_file.open(write_file_name);
@@ -105,7 +116,7 @@ int main(int argc, char** argv) {
     for (int k = 0; k < episode / num_threads; k++) {
         std::vector<std::future<performance_metric>> threadHandles(num_threads);
         for (int i = 0; i < num_threads; i++) {
-            threadHandles[i] = std::async(worker, algo_name, seed, k * num_threads + i, read_file_name);
+            threadHandles[i] = std::async(worker, algo_name, seed, k * num_threads + i, read_file_name, boxGeneration, openBinCount);
             if (!constant_seed) seed++;
             //threadHandles[i] = std::thread(worker, i);
         }

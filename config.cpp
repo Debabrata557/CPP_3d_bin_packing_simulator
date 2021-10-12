@@ -18,7 +18,22 @@ bool operator<(const vector_3d &a, const vector_3d &b)
         }
     }
 }
-
+std::pair<int, int> get_start_point(vector_3d pos, int orientation, vector_3d dim){
+    int lx=dim.x;
+    int ly=dim.y;
+    if(orientation==1){
+        lx=dim.y;
+        ly=dim.x;
+    }
+    if(pos.z==0)
+        return {pos.x, pos.y};
+    else if(pos.z==1)
+        return {pos.x, pos.y-ly+1};
+    else if(pos.z==2)
+        return {pos.x-lx+1, pos.y};
+    else if(pos.z==3)
+        return {pos.x-lx+1, pos.y-ly+1};
+}
 bool comp_floor_building(std::pair<vector_3d, vector_3d> &a, std::pair<vector_3d, vector_3d> &b)
 {
     std::pair<vector_3d, vector_3d> temp_a = {{a.first.z, a.first.x, a.first.y}, {a.second.z, a.second.x, a.second.y}};

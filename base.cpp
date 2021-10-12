@@ -66,17 +66,31 @@ Base::Base(GenerateBox gb, Sim &simulator)
 Base::~Base()
 {
 }
-
-bool Base::check_with_precomputation(const std::vector<std::vector<int>> &state, std::pair<int, int> pos, vector_3d dim)
+    
+bool Base::check_with_precomputation(const std::vector<std::vector<int>> &state, vector_3d pos, vector_3d dim)
 {
     int lx = dim.x;
     int ly = dim.y;
     int lz = dim.z;
 
-    int minx = pos.first;
-    int maxx = pos.first + lx - 1;
-    int miny = pos.second;
-    int maxy = pos.second + ly - 1;
+    int minx = pos.x;
+    int maxx = pos.x + lx - 1;
+    int miny = pos.y;
+    int maxy = pos.y + ly - 1;
+    if(pos.z==1){
+        miny=pos.y-ly+1;
+        maxy=pos.y;
+    }
+    else if(pos.z==2){
+        minx=pos.x-lx+1;
+        maxx=pos.x;
+    }
+    else if(pos.z==3){
+        miny=pos.y-ly+1;
+        maxy=pos.y;
+        minx=pos.x-lx+1;
+        maxx=pos.x;
+    }
     int surface = 5;
 
     if (minx >= 0 && miny >= 0 && maxx <= BIN_WIDTH - 1 && maxy <= BIN_LENGTH - 1)
@@ -127,18 +141,32 @@ bool Base::check_with_precomputation(const std::vector<std::vector<int>> &state,
     return 0;
 }
 
-bool Base::check_without_precomputation(const std::vector<std::vector<int>> &state, std::pair<int, int> pos, vector_3d dim)
+bool Base::check_without_precomputation(const std::vector<std::vector<int>> &state, vector_3d pos, vector_3d dim)
 {
     int lx = dim.x;
     int ly = dim.y;
     int lz = dim.z;
 
-    int minx = pos.first;
-    int maxx = pos.first + lx - 1;
-    int miny = pos.second;
-    int maxy = pos.second + ly - 1;
-    int surface = 5;
 
+    int minx = pos.x;
+    int maxx = pos.x + lx - 1;
+    int miny = pos.y;
+    int maxy = pos.y + ly - 1;
+    if(pos.z==1){
+        miny=pos.y-ly+1;
+        maxy=pos.y;
+    }
+    else if(pos.z==2){
+        minx=pos.x-lx+1;
+        maxx=pos.x;
+    }
+    else if(pos.z==3){
+        miny=pos.y-ly+1;
+        maxy=pos.y;
+        minx=pos.x-lx+1;
+        maxx=pos.x;
+    }
+    int surface = 5;
     if (minx >= 0 && miny >= 0 && maxx <= BIN_WIDTH - 1 && maxy <= BIN_LENGTH - 1)
     {
         int max_height = grid_max(state, minx, maxx + 1, miny, maxy + 1);
@@ -154,19 +182,7 @@ bool Base::check_without_precomputation(const std::vector<std::vector<int>> &sta
         int corner2_min = corner2_max_min.second;
         int corner3_min = corner3_max_min.second;
         int corner4_min = corner4_max_min.second;
-        // int max_height = compute_max_min(minx, maxx, miny, maxy).first;
-        // std::pair<int, int> corner1_max_min = compute_max_min(minx, minx + surface, miny, miny + surface);
-        // std::pair<int, int> corner2_max_min = compute_max_min(maxx - surface, maxx, miny, miny + surface);
-        // std::pair<int, int> corner3_max_min = compute_max_min(minx, minx + surface, maxy - surface, maxy);
-        // std::pair<int, int> corner4_max_min = compute_max_min(maxx - surface, maxx, maxy - surface, maxy);
-        // int corner1_max = corner1_max_min.first;
-        // int corner2_max = corner2_max_min.first;
-        // int corner3_max = corner3_max_min.first;
-        // int corner4_max = corner4_max_min.first;
-        // int corner1_min = corner1_max_min.second;
-        // int corner2_min = corner2_max_min.second;
-        // int corner3_min = corner3_max_min.second;
-        // int corner4_min = corner4_max_min.second;
+
 
         if (max_height + lz > BIN_HEIGHT)
         {

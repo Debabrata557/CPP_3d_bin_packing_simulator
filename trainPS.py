@@ -83,16 +83,16 @@ if __name__ == '__main__':
     POOL_PARAMS = 3 * NPARAMS_X * NPARAMS_Y
     MAX_BOX_LENGTH=60
     MAX_BOX_WIDTH=60
-    BOUNDARY_STRIDE = 10
+    BOUNDARY_STRIDE = 5
     BOUNDARY_PARAMS = MAX_BOX_LENGTH * 2 // BOUNDARY_STRIDE + 2 * MAX_BOX_WIDTH // BOUNDARY_STRIDE
-
-    TOTAL_PARAMS = POOL_PARAMS + BOUNDARY_PARAMS + 2
+    BIAS_HOLE=5
+    TOTAL_PARAMS = POOL_PARAMS + BOUNDARY_PARAMS + BIAS_HOLE
     # NPARAMS_X = (EXTRACT_FEATURE_AREA+STRIDE-1)//STRIDE
     # NPARAMS_Y = (EXTRACT_FEATURE_AREA+STRIDE-1)//STRIDE
     # print('Number of parameters:', NPARAMS)
     directory = "test_dir"
-    NPOPULATION = 25
-    MAXITER = 100000
+    NPOPULATION = 100
+    MAXITER = 50
 
 
     def save_weights_to_file(weights, filename):
@@ -116,7 +116,7 @@ if __name__ == '__main__':
             solutions = solver.ask()
 
             fitness_list_futures = []
-            seed = 75
+            seed = 6
             #seed=0
             fitness_list_futures.append(
                             client.map(
@@ -192,7 +192,7 @@ if __name__ == '__main__':
             genTime = [r["genTime"] for r in results[0]]
 
             solver.tell([x for x in effs])
-            if solver.es.sigma>100:
+            if solver.es.sigma>10:
                 break
 
             row = [
@@ -290,7 +290,9 @@ if __name__ == '__main__':
         filename_out = f'{directory}/result_{gen}.txt'
         save_weights_to_file(weights,filename_in)
         debug=0
-        return run_subproccess(['./build/run',filename_in,filename_out,str(seed),str(episode), algo_name, str(debug)])
+        boxType="cut1"
+        openBinCount=1
+        return run_subproccess(['./build/run',filename_in,filename_out,str(seed),str(episode), algo_name, boxType, str(openBinCount), str(debug)])
 
 
     # if args['test']:
@@ -327,7 +329,7 @@ if __name__ == '__main__':
     solver = CMAES(
             TOTAL_PARAMS,
             popsize=NPOPULATION,
-            weight_decay=0.01,
+            weight_decay=0.00,
             sigma_init=0.5,
             initial_weights=weights
         )

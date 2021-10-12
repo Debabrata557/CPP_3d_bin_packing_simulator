@@ -13,6 +13,7 @@ class GenerateBox
 private:
     std::vector<int> max_size, min_size;
     std::vector<vector_3d> stream_of_boxes;
+    int seed;
     std::mt19937 generator;
     std::uniform_int_distribution<int> cpp_rand;
     // int scaled_max_box_length, scaled_max_box_width, scaled_max_box_height;

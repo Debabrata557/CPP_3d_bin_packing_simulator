@@ -32,49 +32,40 @@ class Smart_Algorithm : public Base {
         int idx = -1;
         int ori = -1;
         for (int i = 0; i < icpbcp_list.size(); i++) {
-            if (check_without_precomputation(cur_state, {icpbcp_list[i].first.x, icpbcp_list[i].first.y}, dim)) {
+            if (check_without_precomputation(cur_state, icpbcp_list[i], dim)) {
                 auto icp_bcp = icpbcp_list[i];
-                int x_diff = icp_bcp.second.x - icp_bcp.first.x;
-                int y_diff = icp_bcp.second.y - icp_bcp.first.y;
-                int z_diff = icp_bcp.second.z - icp_bcp.first.z;
-
-                if ((x_diff >= lx && y_diff >= ly && z_diff >= lz)) {
-                    int holes = find_holes(cur_state, {icpbcp_list[i].first.x, icpbcp_list[i].first.y}, dim);
-                    Bin temp_bin = cur_bin;
-                    temp_bin.update_state({icpbcp_list[i].first.x, icpbcp_list[i].first.y}, dim);
-                    eval_feature x;
-                    x.holes = holes;
-                    std::vector<double> features = extract_state_features_with_symmetry(temp_bin, x, dim, icpbcp_list[i].first.x, icpbcp_list[i].first.y);
-                    // double temp_max = evaluate(features);
-                    double temp_max = evaluate_with_symmetry(features);
-                    if (temp_max > max_score) {
-                        idx = i;
-                        max_score = temp_max;
-                        ori = 0;
-                    }
+                auto start_point =get_start_point(icp_bcp, 0, dim);
+                int holes = find_holes(cur_state, start_point, dim);
+                Bin temp_bin = cur_bin;
+                temp_bin.update_state(start_point, dim);
+                eval_feature x;
+                x.holes = holes;
+                std::vector<double> features = extract_state_features_with_symmetry(temp_bin, x, dim, start_point.first, start_point.second);
+                // double temp_max = evaluate(features);
+                double temp_max = evaluate_with_symmetry(features);
+                if (temp_max > max_score) {
+                    idx = i;
+                    max_score = temp_max;
+                    ori = 0;
                 }
             }
             vector_3d rotated_dim = {dim.y, dim.x, dim.z};
             lx = rotated_dim.x, ly = rotated_dim.y, lz = rotated_dim.z;
-            if (check_without_precomputation(cur_state, {icpbcp_list[i].first.x, icpbcp_list[i].first.y}, rotated_dim)) {
+            if (check_without_precomputation(cur_state, icpbcp_list[i], rotated_dim)) {
                 auto icp_bcp = icpbcp_list[i];
-                int x_diff = icp_bcp.second.x - icp_bcp.first.x;
-                int y_diff = icp_bcp.second.y - icp_bcp.first.y;
-                int z_diff = icp_bcp.second.z - icp_bcp.first.z;
-                if ((x_diff >= lx && y_diff >= ly && z_diff >= lz)) {
-                    int holes = find_holes(cur_state, {icpbcp_list[i].first.x, icpbcp_list[i].first.y}, rotated_dim);
-                    Bin temp_bin = cur_bin;
-                    temp_bin.update_state({icpbcp_list[i].first.x, icpbcp_list[i].first.y}, rotated_dim);
-                    eval_feature x;
-                    x.holes = holes;
-                    std::vector<double> features = extract_state_features_with_symmetry(temp_bin, x, rotated_dim, icpbcp_list[i].first.x, icpbcp_list[i].first.y);
-                    // double temp_max = evaluate(features);
-                    double temp_max = evaluate_with_symmetry(features);
-                    if (temp_max > max_score) {
-                        idx = i;
-                        max_score = temp_max;
-                        ori = 1;
-                    }
+                auto start_point =get_start_point(icp_bcp, 1, dim);
+                int holes = find_holes(cur_state, start_point, rotated_dim);
+                Bin temp_bin = cur_bin;
+                temp_bin.update_state(start_point, rotated_dim);
+                eval_feature x;
+                x.holes = holes;
+                std::vector<double> features = extract_state_features_with_symmetry(temp_bin, x, rotated_dim, start_point.first, start_point.second);
+                // double temp_max = evaluate(features);
+                double temp_max = evaluate_with_symmetry(features);
+                if (temp_max > max_score) {
+                    idx = i;
+                    max_score = temp_max;
+                    ori = 1;
                 }
             }
         }
@@ -90,14 +81,15 @@ class Smart_Algorithm : public Base {
     bool put_box(Sim &simulator, int bin_id, vector_3d box) {
         //std::vector<std::vector<int>> cur_state = simulator.bin_instances[bin_id].get_state();
         // bin_instance.print_state();
-        std::vector<std::pair<vector_3d, vector_3d>> &icpbcp_list = simulator.bin_instances[bin_id].get_icbp_list();
+        std::vector<vector_3d> &icpbcp_list = simulator.bin_instances[bin_id].get_icbp_list();
         //precompute_max_min(cur_state);
         auto idx_ori = get_action(simulator.bin_instances[bin_id], box);
-        auto icp_bcp = simulator.bin_instances[bin_id].get_icbp_list()[idx_ori.first].first;
+        auto icp_bcp = simulator.bin_instances[bin_id].get_icbp_list()[idx_ori.first];
         // std::cout << idx_ori.first << "\n";
         if (idx_ori.first >= 0) {
             int height = simulator.step(bin_id, idx_ori.first, box, idx_ori.second);
-            write_file << bin_id << " " << box.x << " " << box.y << " " << box.z << " " << icp_bcp.x << " " << icp_bcp.y << " " << height << " " << idx_ori.second << "\n";
+            auto start_point=get_start_point(icp_bcp, idx_ori.second, box);
+            write_file << bin_id << " " << box.x << " " << box.y << " " << box.z << " " << start_point.first << " " << start_point.second << " " << height << " " << idx_ori.second << "\n";
             return height != -1;
         } else {
             write_file << bin_id << " " << box.x << " " << box.y << " " << box.z << " " << icp_bcp.x << " " << icp_bcp.y << " " << -1 << " " << idx_ori.second << "\n";
@@ -315,6 +307,9 @@ class Smart_Algorithm : public Base {
         extract_border_feature(cur_state, dim, pos_x, pos_y, x);
         features.push_back(1);
         features.push_back(x.holes / (0.5 * BIN_HEIGHT * BIN_LENGTH * BIN_WIDTH));
+        features.push_back(cur_bin.volume/BIN_HEIGHT * BIN_LENGTH * BIN_WIDTH);
+        features.push_back(*std::max_element(x.max_pool.begin(), x.max_pool.end()));
+        features.push_back(*std::min_element(x.min_pool.begin(), x.min_pool.end()));
         int max_pool_idx = 0, min_pool_idx = 0, avg_pool_idx = 0;
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < x.max_pool.size() / 4; j++, max_pool_idx++) {

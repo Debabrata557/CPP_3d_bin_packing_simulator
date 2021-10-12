@@ -85,9 +85,11 @@ int Sim::step(int bin_id, int icp_bcp_list_id, vector_3d box, int orientation)
     auto icp_bcp_list = bin_instances[bin_id].get_icbp_list();
     if (orientation == 0)
     {
-        auto pos=icp_bcp_list[icp_bcp_list_id].first;
-        int height=bin_instances[bin_id].update_state({pos.x, pos.y}, box);
-        if ( height!=-1 && bin_instances[bin_id].update_icpbcp_list({pos.x, pos.y, height}, box)!=-1)
+        auto pos=icp_bcp_list[icp_bcp_list_id];
+        auto start_point=get_start_point(pos, orientation, box);
+        int x=start_point.first,y=start_point.second;
+        int height=bin_instances[bin_id].update_state({x, y}, box);
+        if ( height!=-1 && bin_instances[bin_id].update_icpbcp_list(pos, box)!=-1)
         {
             total_volume += box.x * box.y * box.z;
             total_number_of_boxes_placed++;
@@ -103,9 +105,11 @@ int Sim::step(int bin_id, int icp_bcp_list_id, vector_3d box, int orientation)
     }
     else
     {
-        auto pos=icp_bcp_list[icp_bcp_list_id].first;
-        int height=bin_instances[bin_id].update_state({pos.x, pos.y}, {box.y, box.x, box.z});
-        if (height!=-1 && bin_instances[bin_id].update_icpbcp_list({pos.x, pos.y, height}, {box.y, box.x, box.z})!=-1)
+        auto pos=icp_bcp_list[icp_bcp_list_id];
+        auto start_point=get_start_point(pos, orientation, box);
+        int x=start_point.first,y=start_point.second;
+        int height=bin_instances[bin_id].update_state({x, y}, {box.y, box.x, box.z});
+        if (height!=-1 && bin_instances[bin_id].update_icpbcp_list(pos, {box.y, box.x, box.z})!=-1)
         {
             total_volume += box.x * box.y * box.z;
             total_number_of_boxes_placed++;

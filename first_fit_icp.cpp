@@ -1,41 +1,25 @@
 #include <algorithm>
 #include <fstream>
 #include "base.h"
-
+//TEMP: =$(smart_algorithm_without_icp_bcp.o smart_algo_withlookahead.o random_algorithm.o smart_algorithm2.o first_fit.o)
 class First_Fit_Icp : public Base
 {
 private:
     std::ofstream write_file;
     std::string write_file_name = "details.txt";
-    std::pair<int, int> get_action(std::vector<std::pair<vector_3d, vector_3d>> &icpbcp_list, std::vector<std::vector<int>> &state, vector_3d &dim)
+    std::pair<int, int> get_action(std::vector<vector_3d> &icpbcp_list, std::vector<std::vector<int>> &state, vector_3d &dim)
     {
         int lx = dim.x, ly = dim.y, lz = dim.z;
-        std::sort(icpbcp_list.begin(), icpbcp_list.end(),comp_first_fit);
+        std::sort(icpbcp_list.begin(), icpbcp_list.end());
         for (int i = 0; i < icpbcp_list.size(); i++)
         {
-            if (check_without_precomputation(state, {icpbcp_list[i].first.x, icpbcp_list[i].first.y}, dim))
+            if (check_without_precomputation(state, icpbcp_list[i], dim))
             {
-                auto icp_bcp = icpbcp_list[i];
-                int x_diff = icp_bcp.second.x - icp_bcp.first.x;
-                int y_diff = icp_bcp.second.y - icp_bcp.first.y;
-                int z_diff = icp_bcp.second.z - icp_bcp.first.z;
-
-                if ((x_diff >= lx && y_diff >= ly && z_diff >= lz))
-                {
-                    return {i, 0};
-                }
+                return {i, 0};
             }
-            if (check_without_precomputation(state, {icpbcp_list[i].first.x, icpbcp_list[i].first.y}, {dim.y, dim.x, dim.z}))
+            if (check_without_precomputation(state, icpbcp_list[i], {dim.y, dim.x, dim.z}))
             {
-                auto icp_bcp = icpbcp_list[i];
-                int x_diff = icp_bcp.second.x - icp_bcp.first.x;
-                int y_diff = icp_bcp.second.y - icp_bcp.first.y;
-                int z_diff = icp_bcp.second.z - icp_bcp.first.z;
-
-                if ((x_diff >= ly && y_diff >= lx && z_diff >= lz))
-                {
-                    return {i, 1};
-                }
+                return {i, 1};
             }
         }
         return {-1, 0};
@@ -52,16 +36,18 @@ public:
     {
         std::vector<std::vector<int>> cur_state = simulator.bin_instances[bin_id].get_state();
         // bin_instance.print_state();
-        std::vector<std::pair<vector_3d, vector_3d>> &icpbcp_list = simulator.bin_instances[bin_id].get_icbp_list();
+        std::vector<vector_3d> &icpbcp_list = simulator.bin_instances[bin_id].get_icbp_list();
         //precompute_max_min(cur_state);
         auto idx_ori = get_action(icpbcp_list, cur_state, box);
-        auto icp_bcp=simulator.bin_instances[bin_id].get_icbp_list()[idx_ori.first].first;
+        auto icp_bcp=simulator.bin_instances[bin_id].get_icbp_list()[idx_ori.first];
         // std::cout << idx_ori.first << "\n";
         if (idx_ori.first >= 0)
         {   
             int height=simulator.step(bin_id, idx_ori.first, box, idx_ori.second);
-            if(real)
-                write_file<<bin_id<<" "<<box.x<<" "<<box.y<<" "<<box.z<<" "<<icp_bcp.x<<" "<<icp_bcp.y<<" "<<height<<" "<<idx_ori.second<<"\n";  
+            if(real){
+                auto start_point=get_start_point(icp_bcp, idx_ori.second, box);
+                write_file << bin_id << " " << box.x << " " << box.y << " " << box.z << " " << start_point.first << " " << start_point.second << " " << height << " " << idx_ori.second << "\n";   
+            }
             return height!=-1;
         }
         else

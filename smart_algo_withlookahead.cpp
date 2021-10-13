@@ -38,6 +38,7 @@ class Smart_Algorithm_WithLookahead : public Base {
                 int holes = find_holes(cur_state,start_point, dim);
                 Bin temp_bin = cur_bin;
                 temp_bin.update_state(start_point, dim);
+                temp_bin.volume+=dim.x*dim.y*dim.z;
                 eval_feature x;
                 x.holes = holes;
                 std::vector<double> features = extract_state_features_with_symmetry(temp_bin, x, dim, start_point.first, start_point.second);
@@ -56,6 +57,7 @@ class Smart_Algorithm_WithLookahead : public Base {
                 auto start_point =get_start_point(icp_bcp, 1, dim);
                 int holes = find_holes(cur_state, start_point, rotated_dim);
                 Bin temp_bin = cur_bin;
+                temp_bin.volume+=rotated_dim.x*rotated_dim.y*rotated_dim.z;
                 temp_bin.update_state(start_point, rotated_dim);
                 eval_feature x;
                 x.holes = holes;
@@ -306,7 +308,7 @@ class Smart_Algorithm_WithLookahead : public Base {
         extract_border_feature(cur_state, dim, pos_x, pos_y, x);
         features.push_back(1);
         features.push_back(x.holes / (0.5 * BIN_HEIGHT * BIN_LENGTH * BIN_WIDTH));
-        features.push_back(cur_bin.volume/BIN_HEIGHT * BIN_LENGTH * BIN_WIDTH);
+        features.push_back(cur_bin.volume/(BIN_HEIGHT * BIN_LENGTH * BIN_WIDTH));
         features.push_back(*std::max_element(x.max_pool.begin(), x.max_pool.end()));
         features.push_back(*std::min_element(x.min_pool.begin(), x.min_pool.end()));
         int max_pool_idx = 0, min_pool_idx = 0, avg_pool_idx = 0;

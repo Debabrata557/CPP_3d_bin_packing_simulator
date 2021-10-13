@@ -41,11 +41,14 @@ performance_metric worker(std::string algo_name, int seed, int episode, std::str
     // int NPARAMS_Y = (BIN_LENGTH+STRIDE-1)/STRIDE;
     // int NPARAMS_X = (EXTRACT_FEATURE_AREA+STRIDE-1)/STRIDE;
     // int NPARAMS_Y = (EXTRACT_FEATURE_AREA+STRIDE-1)/STRIDE; /// this should be integer.Discreteization factor must be a factor of BIN_WIDTH and BIN_LENGTH
-    std::vector<double> params(TOTAL_PARAMS, 0);
-    for (int i = 0; i < TOTAL_PARAMS; i++) {
-        read_file >> params[i];
-        // std::cout<<params[i]<<"\n";
+    std::vector<double> params;
+    while(true){
+        double x;
+        read_file>>x;
+        if(read_file.eof())break;
+        params.push_back(x);
     }
+    assert(TOTAL_PARAMS==params.size());
     Base* x;
     if (algo_name == "first_fit_icp") {
         std::cout << "running first_fit_icp.." << episode << " " << seed << "\n";

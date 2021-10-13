@@ -244,7 +244,7 @@ if __name__ == '__main__':
         bestMean=-1
 
         fitness_list_futures = []
-        seed = np.random.randint(0,1000)
+        seed = 0
         #seed=0
         fitness_list_futures.append(
                     client.map(

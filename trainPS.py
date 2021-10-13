@@ -75,24 +75,27 @@ if __name__ == '__main__':
     EXTRACT_FEATURE_AREA=70
     BIN_WIDTH=120
     BIN_LENGTH=180
-    # NPARAMS_X = (120+STRIDE-1)//STRIDE
-    # NPARAMS_Y = (180+STRIDE-1)//STRIDE
-    NPARAMS_X = ((BIN_WIDTH // 2) + STRIDE - 1) // STRIDE;  #with symmetry
-    NPARAMS_Y = ((BIN_LENGTH // 2) + STRIDE - 1) // STRIDE
+    NUM_HIDDEN_LAYERS= 1
+    NUM_HIDDEN_NEURONS = 5
+    NPARAMS_X = (BIN_WIDTH + STRIDE - 1) // STRIDE
+    NPARAMS_Y = (BIN_LENGTH + STRIDE - 1) // STRIDE
+    # NPARAMS_X = ((BIN_WIDTH // 2) + STRIDE - 1) // STRIDE;  #with symmetry
+    # NPARAMS_Y = ((BIN_LENGTH // 2) + STRIDE - 1) // STRIDE
 
     POOL_PARAMS = 3 * NPARAMS_X * NPARAMS_Y
     MAX_BOX_LENGTH=60
     MAX_BOX_WIDTH=60
     BOUNDARY_STRIDE = 5
     BOUNDARY_PARAMS = MAX_BOX_LENGTH * 2 // BOUNDARY_STRIDE + 2 * MAX_BOX_WIDTH // BOUNDARY_STRIDE
-    BIAS_HOLE=5
-    TOTAL_PARAMS = POOL_PARAMS + BOUNDARY_PARAMS + BIAS_HOLE
+    HOLE_VOLUME=4
+    NUM_INPUT_FEATURES = POOL_PARAMS + BOUNDARY_PARAMS + HOLE_VOLUME
+    TOTAL_PARAMS = NUM_INPUT_FEATURES * NUM_HIDDEN_NEURONS + (NUM_HIDDEN_LAYERS - 1) * NUM_HIDDEN_NEURONS * NUM_HIDDEN_NEURONS + 1 * NUM_HIDDEN_NEURONS + NUM_HIDDEN_LAYERS * NUM_HIDDEN_NEURONS + 1
     # NPARAMS_X = (EXTRACT_FEATURE_AREA+STRIDE-1)//STRIDE
     # NPARAMS_Y = (EXTRACT_FEATURE_AREA+STRIDE-1)//STRIDE
     # print('Number of parameters:', NPARAMS)
     directory = "test_dir"
     NPOPULATION = 100
-    MAXITER = 50
+    MAXITER = 5000
 
 
     def save_weights_to_file(weights, filename):
@@ -211,7 +214,8 @@ if __name__ == '__main__':
             # _row = pretty_format_row(row)
             print('train result: ')
             print(row)
-            run_test(solver, file)
+            if(j>100):
+                run_test(solver, file)
         file.close()
             # history.append(row)
 
@@ -244,8 +248,7 @@ if __name__ == '__main__':
         bestMean=-1
 
         fitness_list_futures = []
-        seed = np.random.randint(0,1000)
-        #seed=0
+        seed=0
         fitness_list_futures.append(
                     client.map(
                         fit_func,

@@ -22,18 +22,20 @@ const int STRIDE = 20;
 const int EXTRACT_FEATURE_AREA = 70;
 const int NUM_FEATURES = 80;
 
-//const int NPARAMS_X = (BIN_WIDTH+STRIDE-1)/STRIDE; //without symmetry
-//const int NPARAMS_Y = (BIN_LENGTH+STRIDE-1)/STRIDE;
+const int NPARAMS_X = (BIN_WIDTH + STRIDE - 1) / STRIDE;  //without symmetry
+const int NPARAMS_Y = (BIN_LENGTH + STRIDE - 1) / STRIDE;
 
-const int NPARAMS_X = ((BIN_WIDTH / 2) + STRIDE - 1) / STRIDE;  // with symmetry
-const int NPARAMS_Y = ((BIN_LENGTH / 2) + STRIDE - 1) / STRIDE;
+// const int NPARAMS_X = ((BIN_WIDTH / 2) + STRIDE - 1) / STRIDE;  // with symmetry
+// const int NPARAMS_Y = ((BIN_LENGTH / 2) + STRIDE - 1) / STRIDE;
 
 const int POOL_PARAMS = 3 * NPARAMS_X * NPARAMS_Y;
-
+const int NUM_HIDDEN_LAYERS = 1;
+const int NUM_HIDDEN_NEURONS = 5;
 const int BOUNDARY_STRIDE = 5;
 const int BOUNDARY_PARAMS = MAX_BOX_LENGTH * 2 / BOUNDARY_STRIDE + 2 * MAX_BOX_WIDTH / BOUNDARY_STRIDE;
-const int BIAS_HOLE = 5;
-const int TOTAL_PARAMS = POOL_PARAMS + BOUNDARY_PARAMS + BIAS_HOLE;
+const int HOLE_VOLUME = 4;
+const int NUM_INPUT_FEATURES = POOL_PARAMS + BOUNDARY_PARAMS + HOLE_VOLUME;
+const int TOTAL_PARAMS = NUM_INPUT_FEATURES * NUM_HIDDEN_NEURONS + (NUM_HIDDEN_LAYERS - 1) * NUM_HIDDEN_NEURONS * NUM_HIDDEN_NEURONS + 1 * NUM_HIDDEN_NEURONS + NUM_HIDDEN_LAYERS * NUM_HIDDEN_NEURONS + 1;
 
 typedef struct vector_3d {
     int x, y, z;

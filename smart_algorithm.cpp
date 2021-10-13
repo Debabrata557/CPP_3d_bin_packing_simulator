@@ -7,13 +7,15 @@ Take features from the complete state.
 #include <algorithm>
 #include <fstream>
 
+#include "NNModel.h"
 #include "base.h"
 
 class Smart_Algorithm : public Base {
    private:
     std::ofstream write_file;
     std::string write_file_name = "details.txt";
-    std::vector<double> params;
+    double *params;
+    NNModel nn;
     int find_holes(std::vector<std::vector<int>> cur_state, std::pair<int, int> xy, vector_3d dim) {
         int max_height = grid_max(cur_state, xy.first, xy.first + dim.x, xy.second, xy.second + dim.y);
         int holes = 0;
@@ -34,15 +36,16 @@ class Smart_Algorithm : public Base {
         for (int i = 0; i < icpbcp_list.size(); i++) {
             if (check_without_precomputation(cur_state, icpbcp_list[i], dim)) {
                 auto icp_bcp = icpbcp_list[i];
-                auto start_point =get_start_point(icp_bcp, 0, dim);
+                auto start_point = get_start_point(icp_bcp, 0, dim);
                 int holes = find_holes(cur_state, start_point, dim);
                 Bin temp_bin = cur_bin;
                 temp_bin.update_state(start_point, dim);
+                temp_bin.volume += dim.x * dim.y * dim.z;
                 eval_feature x;
                 x.holes = holes;
-                std::vector<double> features = extract_state_features_with_symmetry(temp_bin, x, dim, start_point.first, start_point.second);
+                std::vector<double> features = extract_state_features(temp_bin, x, dim, start_point.first, start_point.second);
                 // double temp_max = evaluate(features);
-                double temp_max = evaluate_with_symmetry(features);
+                double temp_max = evaluate(features);
                 if (temp_max > max_score) {
                     idx = i;
                     max_score = temp_max;
@@ -53,15 +56,16 @@ class Smart_Algorithm : public Base {
             lx = rotated_dim.x, ly = rotated_dim.y, lz = rotated_dim.z;
             if (check_without_precomputation(cur_state, icpbcp_list[i], rotated_dim)) {
                 auto icp_bcp = icpbcp_list[i];
-                auto start_point =get_start_point(icp_bcp, 1, dim);
+                auto start_point = get_start_point(icp_bcp, 1, dim);
                 int holes = find_holes(cur_state, start_point, rotated_dim);
                 Bin temp_bin = cur_bin;
                 temp_bin.update_state(start_point, rotated_dim);
+                temp_bin.volume += dim.x * dim.y * dim.z;
                 eval_feature x;
                 x.holes = holes;
-                std::vector<double> features = extract_state_features_with_symmetry(temp_bin, x, rotated_dim, start_point.first, start_point.second);
+                std::vector<double> features = extract_state_features(temp_bin, x, rotated_dim, start_point.first, start_point.second);
                 // double temp_max = evaluate(features);
-                double temp_max = evaluate_with_symmetry(features);
+                double temp_max = evaluate(features);
                 if (temp_max > max_score) {
                     idx = i;
                     max_score = temp_max;
@@ -76,7 +80,11 @@ class Smart_Algorithm : public Base {
     Smart_Algorithm() {
     }
     Smart_Algorithm(GenerateBox gb, Sim &simulator, const std::vector<double> &params) : Base(gb, simulator) {
-        this->params = params;
+        this->params = new double[params.size()];
+        for (int i = 0; i < params.size(); i++) {
+            this->params[i] = params[i];
+        }
+        nn.initialize(NUM_FEATURES, 1, 5, this->params);
     }
     bool put_box(Sim &simulator, int bin_id, vector_3d box) {
         //std::vector<std::vector<int>> cur_state = simulator.bin_instances[bin_id].get_state();
@@ -88,7 +96,7 @@ class Smart_Algorithm : public Base {
         // std::cout << idx_ori.first << "\n";
         if (idx_ori.first >= 0) {
             int height = simulator.step(bin_id, idx_ori.first, box, idx_ori.second);
-            auto start_point=get_start_point(icp_bcp, idx_ori.second, box);
+            auto start_point = get_start_point(icp_bcp, idx_ori.second, box);
             write_file << bin_id << " " << box.x << " " << box.y << " " << box.z << " " << start_point.first << " " << start_point.second << " " << height << " " << idx_ori.second << "\n";
             return height != -1;
         } else {
@@ -97,42 +105,50 @@ class Smart_Algorithm : public Base {
         }
         return 0;
     }
-    int evaluate(std::vector<double> &features) {
-        double sum = 0;
-        //assert params.size()==features.size();
+    double evaluate(std::vector<double> &features) {
+        // double sum = 0;
+        // //assert params.size()==features.size();
+        // for (int i = 0; i < features.size(); i++) {
+        //     sum += features[i] * params[i];
+        // }
+        // // std::cout<<sum<<"\n";
+        // return sum;
+        double *nn_input = new double[features.size()];
+        double output;
         for (int i = 0; i < features.size(); i++) {
-            sum += features[i] * params[i];
+            nn_input[i] = features[i];
         }
-        // std::cout<<sum<<"\n";
-        return sum;
+        nn.compute_nn_forward(nn_input, &output);
+        delete[] nn_input;
+        return output;
     }
     double evaluate_with_symmetry(std::vector<double> &features) {
         double sum = 0;
         //assert params.size()==features.size();
         sum += params[0] * features[0];
         sum += params[1] * features[1];
-        int j = BIAS_HOLE;
+        int j = HOLE_VOLUME;
 
-        for (int i = BIAS_HOLE; i < POOL_PARAMS + BIAS_HOLE; i++, j++) {
+        for (int i = HOLE_VOLUME; i < POOL_PARAMS + HOLE_VOLUME; i++, j++) {
             sum += features[j] * params[i];
-            assert(j<features.size());
+            assert(j < features.size());
         }
-        for (int i = BIAS_HOLE; i < POOL_PARAMS + BIAS_HOLE; i++, j++) {
+        for (int i = HOLE_VOLUME; i < POOL_PARAMS + HOLE_VOLUME; i++, j++) {
             sum += features[j] * params[i];
-            assert(j<features.size());
+            assert(j < features.size());
         }
-        for (int i = BIAS_HOLE; i < POOL_PARAMS + BIAS_HOLE; i++, j++) {
+        for (int i = HOLE_VOLUME; i < POOL_PARAMS + HOLE_VOLUME; i++, j++) {
             sum += features[j] * params[i];
-            assert(j<features.size());
+            assert(j < features.size());
         }
-        for (int i = BIAS_HOLE; i < POOL_PARAMS + BIAS_HOLE; i++, j++) {
+        for (int i = HOLE_VOLUME; i < POOL_PARAMS + HOLE_VOLUME; i++, j++) {
             sum += features[j] * params[i];
-            assert(j<features.size());
+            assert(j < features.size());
         }
-        for (int i = BIAS_HOLE + POOL_PARAMS; i < BOUNDARY_PARAMS + BIAS_HOLE + POOL_PARAMS; i++, j++) {
+        for (int i = HOLE_VOLUME + POOL_PARAMS; i < BOUNDARY_PARAMS + HOLE_VOLUME + POOL_PARAMS; i++, j++) {
             sum += features[j] * params[i];
             //std::cout<<j<<" "<<features.size()<<std::endl;
-            assert(j<features.size());
+            assert(j < features.size());
         }
         // std::cout<<sum<<"\n";
         return sum;
@@ -277,8 +293,10 @@ class Smart_Algorithm : public Base {
         extract_pool_features(cur_state, start_x, end_x, start_y, end_y, x, STRIDE, FILTER_SIZE);
 
         extract_border_feature(cur_state, dim, pos_x, pos_y, x);
-        features.push_back(1);
         features.push_back(x.holes / (0.5 * BIN_HEIGHT * BIN_LENGTH * BIN_WIDTH));
+        features.push_back(cur_bin.volume / (BIN_HEIGHT * BIN_LENGTH * BIN_WIDTH));
+        features.push_back(*std::max_element(x.max_pool.begin(), x.max_pool.end()));
+        features.push_back(*std::min_element(x.min_pool.begin(), x.min_pool.end()));
         for (int i : x.max_pool) {
             features.push_back(i * 1.0 / BIN_HEIGHT);
         }
@@ -305,9 +323,8 @@ class Smart_Algorithm : public Base {
         // extract_pool_features(cur_state, start_x, end_x, start_y, end_y, x, STRIDE, FILTER_SIZE);
 
         extract_border_feature(cur_state, dim, pos_x, pos_y, x);
-        features.push_back(1);
         features.push_back(x.holes / (0.5 * BIN_HEIGHT * BIN_LENGTH * BIN_WIDTH));
-        features.push_back(cur_bin.volume/BIN_HEIGHT * BIN_LENGTH * BIN_WIDTH);
+        features.push_back(cur_bin.volume / (BIN_HEIGHT * BIN_LENGTH * BIN_WIDTH));
         features.push_back(*std::max_element(x.max_pool.begin(), x.max_pool.end()));
         features.push_back(*std::min_element(x.min_pool.begin(), x.min_pool.end()));
         int max_pool_idx = 0, min_pool_idx = 0, avg_pool_idx = 0;
@@ -326,7 +343,7 @@ class Smart_Algorithm : public Base {
             features.push_back(i * 1.0 / BIN_HEIGHT);
         }
         int cur_size = features.size();
-        for (int i = cur_size; i < BIAS_HOLE+4*POOL_PARAMS+BOUNDARY_PARAMS; i++) {
+        for (int i = cur_size; i < HOLE_VOLUME + 4 * POOL_PARAMS + BOUNDARY_PARAMS; i++) {
             features.push_back(0);
         }
         return features;

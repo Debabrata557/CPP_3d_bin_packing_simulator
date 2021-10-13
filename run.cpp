@@ -24,11 +24,11 @@ std::ofstream write_file;
 performance_metric worker(std::string algo_name, int seed, int episode, std::string read_file_name, std::string boxGeneration, int openBinCount)  //episode number is seed
 {
     GenerateBox gb;
-    if(boxGeneration=="cut1")
+    if (boxGeneration == "cut1")
         gb = GenerateBox(seed, "cut1", 0);
     else
         gb = GenerateBox(seed, "random", 2000);
-    
+
     read_file.open(read_file_name);
     std::vector<vector_3d> boxes = gb.get_stream_of_boxes();
     // std::cout << boxes.size() << "\n";
@@ -41,21 +41,30 @@ performance_metric worker(std::string algo_name, int seed, int episode, std::str
     // int NPARAMS_Y = (BIN_LENGTH+STRIDE-1)/STRIDE;
     // int NPARAMS_X = (EXTRACT_FEATURE_AREA+STRIDE-1)/STRIDE;
     // int NPARAMS_Y = (EXTRACT_FEATURE_AREA+STRIDE-1)/STRIDE; /// this should be integer.Discreteization factor must be a factor of BIN_WIDTH and BIN_LENGTH
-    std::vector<double> params(TOTAL_PARAMS, 0);
-    for (int i = 0; i < TOTAL_PARAMS; i++) {
-        read_file >> params[i];
-        // std::cout<<params[i]<<"\n";
+    std::vector<double> params;
+    // std::cout << TOTAL_PARAMS << "\n";
+    std::vector<double> temp_param;
+    int n;
+    while (true) {
+        double x;
+        read_file >> x;
+        if (read_file.eof()) break;
+        params.push_back(x);
     }
+    std::cout << params.size() << " " << TOTAL_PARAMS << "\n";
+    assert(TOTAL_PARAMS == params.size());
+    // for (int i = 0; i < TOTAL_PARAMS; i++) {
+    //     read_file >> params[i];
+    //     // std::cout<<params[i]<<"\n";
+    // }
     Base* x;
     if (algo_name == "first_fit_icp") {
         std::cout << "running first_fit_icp.." << episode << " " << seed << "\n";
         x = new First_Fit_Icp(gb, simulator);
-    }
-    else if (algo_name == "smart_algo") {
+    } else if (algo_name == "smart_algo") {
         std::cout << "running smart algorithm.." << episode << " " << seed << "\n";
         x = new Smart_Algorithm(gb, simulator, params);
-    }
-    else if (algo_name == "smart_algo_with_lookahead") {
+    } else if (algo_name == "smart_algo_with_lookahead") {
         std::cout << "running smart algorithm with lookahead.." << episode << " " << seed << "\n";
         x = new Smart_Algorithm_WithLookahead(gb, simulator, params);
         lookahead = 1;
@@ -145,7 +154,7 @@ int main(int argc, char** argv) {
     std::cout << "min efficiency"
               << " " << mineff << "\n";
     std::cout << "min seed"
-              << " " << minseed-1 << "\n";
+              << " " << minseed - 1 << "\n";
 
     clock_t end_time = clock();
 

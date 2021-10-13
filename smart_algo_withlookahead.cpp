@@ -34,8 +34,8 @@ class Smart_Algorithm_WithLookahead : public Base {
         for (int i = 0; i < icpbcp_list.size(); i++) {
             if (check_without_precomputation(cur_state, icpbcp_list[i], dim)) {
                 auto icp_bcp = icpbcp_list[i];
-                auto start_point =get_start_point(icp_bcp, 0, dim);
-                int holes = find_holes(cur_state,start_point, dim);
+                auto start_point = get_start_point(icp_bcp, 0, dim);
+                int holes = find_holes(cur_state, start_point, dim);
                 Bin temp_bin = cur_bin;
                 temp_bin.update_state(start_point, dim);
                 eval_feature x;
@@ -53,7 +53,7 @@ class Smart_Algorithm_WithLookahead : public Base {
             lx = rotated_dim.x, ly = rotated_dim.y, lz = rotated_dim.z;
             if (check_without_precomputation(cur_state, icpbcp_list[i], rotated_dim)) {
                 auto icp_bcp = icpbcp_list[i];
-                auto start_point =get_start_point(icp_bcp, 1, dim);
+                auto start_point = get_start_point(icp_bcp, 1, dim);
                 int holes = find_holes(cur_state, start_point, rotated_dim);
                 Bin temp_bin = cur_bin;
                 temp_bin.update_state(start_point, rotated_dim);
@@ -88,12 +88,12 @@ class Smart_Algorithm_WithLookahead : public Base {
         auto icp_bcp = simulator.bin_instances[bin_id].get_icbp_list()[idx_ori.first];
         // std::cout << idx_ori.first << "\n";
         if (idx_ori.first >= 0) {
-            int height=simulator.step(bin_id, idx_ori.first, box, idx_ori.second);
-            if(real){
-                auto start_point=get_start_point(icp_bcp, idx_ori.second, box);
-                write_file << bin_id << " " << box.x << " " << box.y << " " << box.z << " " << start_point.first << " " << start_point.second << " " << height << " " << idx_ori.second << "\n";   
+            int height = simulator.step(bin_id, idx_ori.first, box, idx_ori.second);
+            if (real) {
+                auto start_point = get_start_point(icp_bcp, idx_ori.second, box);
+                write_file << bin_id << " " << box.x << " " << box.y << " " << box.z << " " << start_point.first << " " << start_point.second << " " << height << " " << idx_ori.second << "\n";
             }
-            return height!=-1;
+            return height != -1;
         } else {
             if (real)
                 write_file << bin_id << " " << box.x << " " << box.y << " " << box.z << " " << icp_bcp.x << " " << icp_bcp.y << " " << -1 << " " << -1 << "\n";
@@ -115,21 +115,21 @@ class Smart_Algorithm_WithLookahead : public Base {
         //assert params.size()==features.size();
         sum += params[0] * features[0];
         sum += params[1] * features[1];
-        int j = BIAS_HOLE;
+        int j = HOLE_VOLUME;
 
-        for (int i = BIAS_HOLE; i < POOL_PARAMS + BIAS_HOLE; i++, j++) {
+        for (int i = HOLE_VOLUME; i < POOL_PARAMS + HOLE_VOLUME; i++, j++) {
             sum += features[j] * params[i];
         }
-        for (int i = BIAS_HOLE; i < POOL_PARAMS + BIAS_HOLE; i++, j++) {
+        for (int i = HOLE_VOLUME; i < POOL_PARAMS + HOLE_VOLUME; i++, j++) {
             sum += features[j] * params[i];
         }
-        for (int i = BIAS_HOLE; i < POOL_PARAMS + BIAS_HOLE; i++, j++) {
+        for (int i = HOLE_VOLUME; i < POOL_PARAMS + HOLE_VOLUME; i++, j++) {
             sum += features[j] * params[i];
         }
-        for (int i = BIAS_HOLE; i < POOL_PARAMS + BIAS_HOLE; i++, j++) {
+        for (int i = HOLE_VOLUME; i < POOL_PARAMS + HOLE_VOLUME; i++, j++) {
             sum += features[j] * params[i];
         }
-        for (int i = BIAS_HOLE + POOL_PARAMS; i < BOUNDARY_PARAMS + BIAS_HOLE + POOL_PARAMS; i++, j++) {
+        for (int i = HOLE_VOLUME + POOL_PARAMS; i < BOUNDARY_PARAMS + HOLE_VOLUME + POOL_PARAMS; i++, j++) {
             sum += features[j] * params[i];
         }
         // std::cout<<sum<<"\n";
@@ -306,7 +306,7 @@ class Smart_Algorithm_WithLookahead : public Base {
         extract_border_feature(cur_state, dim, pos_x, pos_y, x);
         features.push_back(1);
         features.push_back(x.holes / (0.5 * BIN_HEIGHT * BIN_LENGTH * BIN_WIDTH));
-        features.push_back(cur_bin.volume/BIN_HEIGHT * BIN_LENGTH * BIN_WIDTH);
+        features.push_back(cur_bin.volume / BIN_HEIGHT * BIN_LENGTH * BIN_WIDTH);
         features.push_back(*std::max_element(x.max_pool.begin(), x.max_pool.end()));
         features.push_back(*std::min_element(x.min_pool.begin(), x.min_pool.end()));
         int max_pool_idx = 0, min_pool_idx = 0, avg_pool_idx = 0;
@@ -325,7 +325,7 @@ class Smart_Algorithm_WithLookahead : public Base {
             features.push_back(i * 1.0 / BIN_HEIGHT);
         }
         int cur_size = features.size();
-        for (int i = cur_size; i < BIAS_HOLE+4*POOL_PARAMS+BOUNDARY_PARAMS; i++) {
+        for (int i = cur_size; i < HOLE_VOLUME + 4 * POOL_PARAMS + BOUNDARY_PARAMS; i++) {
             features.push_back(0);
         }
         return features;
@@ -342,8 +342,7 @@ class Smart_Algorithm_WithLookahead : public Base {
             double max_after_state_score = -DBL_MAX;
             int best_box_id = -1;
 
-
-            for(int i=0;i<lookaehead_buffer.size();i++){
+            for (int i = 0; i < lookaehead_buffer.size(); i++) {
                 auto temp_simulator = simulator;
                 double after_state_score;
                 int flag = 0;
@@ -363,7 +362,7 @@ class Smart_Algorithm_WithLookahead : public Base {
                     max_after_state_score = after_state_score;
                     best_box_id = i;
                 }
-            } 
+            }
 
             if (best_box_id != -1) {
                 int flag = 0;

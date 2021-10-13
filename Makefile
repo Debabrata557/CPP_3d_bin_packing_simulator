@@ -1,7 +1,7 @@
 CFLAGS:=-g -Wno-unused-value -pthread -Wall
 CC:=g++
 DIR=build
-OBJECTS1 := $(addprefix $(DIR)/,sim.o base.o  smart_algorithm.o smart_algo_withlookahead.o first_fit_icp.o config.o helper.o bin.o generate_box.o run.o)
+OBJECTS1 := $(addprefix $(DIR)/,sim.o base.o NNModel.o smart_algorithm.o smart_algo_withlookahead.o first_fit_icp.o config.o helper.o bin.o generate_box.o run.o)
 output: $(OBJECTS1)
 	$(CC) $(CFLAGS) $(OBJECTS1) -o $(DIR)/run -pthread
 

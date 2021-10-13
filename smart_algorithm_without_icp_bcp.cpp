@@ -107,21 +107,21 @@
 //         //assert params.size()==features.size();
 //         sum += params[0] * features[0];
 //         sum += params[1] * features[1];
-//         int j = BIAS_HOLE;
+//         int j = HOLE_VOLUME;
 
-//         for (int i = BIAS_HOLE; i < POOL_PARAMS + BIAS_HOLE; i++, j++) {
+//         for (int i = HOLE_VOLUME; i < POOL_PARAMS + HOLE_VOLUME; i++, j++) {
 //             sum += features[j] * params[i];
 //         }
-//         for (int i = BIAS_HOLE; i < POOL_PARAMS + BIAS_HOLE; i++, j++) {
+//         for (int i = HOLE_VOLUME; i < POOL_PARAMS + HOLE_VOLUME; i++, j++) {
 //             sum += features[j] * params[i];
 //         }
-//         for (int i = BIAS_HOLE; i < POOL_PARAMS + BIAS_HOLE; i++, j++) {
+//         for (int i = HOLE_VOLUME; i < POOL_PARAMS + HOLE_VOLUME; i++, j++) {
 //             sum += features[j] * params[i];
 //         }
-//         for (int i = BIAS_HOLE; i < POOL_PARAMS + BIAS_HOLE; i++, j++) {
+//         for (int i = HOLE_VOLUME; i < POOL_PARAMS + HOLE_VOLUME; i++, j++) {
 //             sum += features[j] * params[i];
 //         }
-//         for (int i = BIAS_HOLE + POOL_PARAMS; i < BOUNDARY_PARAMS + BIAS_HOLE + POOL_PARAMS; i++, j++) {
+//         for (int i = HOLE_VOLUME + POOL_PARAMS; i < BOUNDARY_PARAMS + HOLE_VOLUME + POOL_PARAMS; i++, j++) {
 //             sum += features[j] * params[i];
 //         }
 //         // std::cout<<sum<<"\n";
@@ -314,7 +314,7 @@
 //             features.push_back(i * 1.0 / BIN_HEIGHT);
 //         }
 //         int cur_size = features.size();
-//         for (int i = cur_size; i < BIAS_HOLE+4*POOL_PARAMS+BOUNDARY_PARAMS; i++) {
+//         for (int i = cur_size; i < HOLE_VOLUME+4*POOL_PARAMS+BOUNDARY_PARAMS; i++) {
 //             features.push_back(0);
 //         }
 //         return features;

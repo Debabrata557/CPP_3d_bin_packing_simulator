@@ -1,38 +1,30 @@
 #include "config.h"
 
-bool operator<(const vector_3d &a, const vector_3d &b)
-{
-    if (a.x != b.x)
-    {
+bool operator<(const vector_3d &a, const vector_3d &b) {
+    if (a.x != b.x) {
         return a.x < b.x;
-    }
-    else
-    {
-        if (a.y != b.y)
-        {
+    } else {
+        if (a.y != b.y) {
             return a.y < b.y;
-        }
-        else
-        {
+        } else {
             return a.z < b.z;
         }
     }
 }
-std::pair<int, int> get_start_point(vector_3d pos, int orientation, vector_3d dim){
-    int lx=dim.x;
-    int ly=dim.y;
-    if(orientation==1){
-        lx=dim.y;
-        ly=dim.x;
+std::pair<int, int> get_start_point(vector_3d pos, int orientation, vector_3d dim) {
+    int lx = dim.x;
+    int ly = dim.y;
+    if (orientation == 1) {
+        lx = dim.y;
+        ly = dim.x;
     }
-    if(pos.z==0)
+    if (pos.z == 0)
         return {pos.x, pos.y};
-    else if(pos.z==1)
-        return {pos.x, pos.y-ly+1};
-    else if(pos.z==2)
-        return {pos.x-lx+1, pos.y};
-    else if(pos.z==3)
-        return {pos.x-lx+1, pos.y-ly+1};
+    else if (pos.z == 1)
+        return {pos.x, pos.y - ly + 1};
+    else if (pos.z == 2)
+        return {pos.x - lx + 1, pos.y};
+    return {pos.x - lx + 1, pos.y - ly + 1};
 }
 bool comp_floor_building(vector_3d &a, vector_3d &b)
 {
@@ -43,34 +35,30 @@ bool comp_floor_building(vector_3d &a, vector_3d &b)
 
 void print_vector_3d(vector_3d &a)
 {
+
     std::cout << " x: " << a.x << " y: " << a.y << " z: " << a.z << std::endl;
 }
-void print_list_vector_3d(std::vector<vector_3d> &a)
-{
+void print_list_vector_3d(std::vector<vector_3d> &a) {
     int n = a.size();
-    for (int i = 0; i < n; i++)
-    {
+    for (int i = 0; i < n; i++) {
         print_vector_3d(a[i]);
     }
 }
-void print_pair_vector_3d(std::pair<vector_3d, vector_3d> &a)
-{
+void print_pair_vector_3d(std::pair<vector_3d, vector_3d> &a) {
     std::cout << " x1: " << a.first.x << " y1: " << a.first.y << " z1: " << a.first.z << "  "
               << " x2: " << a.second.x << " y2: " << a.second.y << " z2: " << a.second.z << std::endl;
 }
-void print_list_pair_vector_3d(std::vector<std::pair<vector_3d, vector_3d>> &a)
-{
+void print_list_pair_vector_3d(std::vector<std::pair<vector_3d, vector_3d>> &a) {
     int n = a.size();
-    for (int i = 0; i < n; i++)
-    {
+    for (int i = 0; i < n; i++) {
         print_pair_vector_3d(a[i]);
     }
 }
-void print_state(std::vector<std::vector<int>> &a){
-    for (int i=0;i<a.size();i++){
-        for(int j=0;j<a[0].size();j++){
-            std::cout<<a[i][j]<<" ";
+void print_state(std::vector<std::vector<int>> &a) {
+    for (int i = 0; i < a.size(); i++) {
+        for (int j = 0; j < a[0].size(); j++) {
+            std::cout << a[i][j] << " ";
         }
-        std::cout<<std::endl;
+        std::cout << std::endl;
     }
 }

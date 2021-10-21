@@ -104,8 +104,8 @@ int GenerateBox::generate_cut1(int repeat)
     for (int i = 0; i < repeat; i++){
         stream_of_boxes.insert(stream_of_boxes.end(), temp_boxes.begin(), temp_boxes.end());
     } 
-    // if(repeat)
-    //     std::shuffle(stream_of_boxes.begin(), stream_of_boxes.end(), generator);
+    if(repeat)
+        std::shuffle(stream_of_boxes.begin(), stream_of_boxes.end(), generator);
     return 1;
 }
 

@@ -2,7 +2,16 @@
 /*
 
 Take features from the complete state.
+
+remove max pool, min pool avg pool. it might happen that because of this if larger box is divided into two pools it will increase
+the max height and min height. add the diff of heights of all blocks, volume of box which we are putting, border feature. if border diff is equal to
+height of box then that is not a penalty.
+
+build feature to put larger box first. try to make surrounding smooth if not possible put the box at separate corner or min/max uneven.
+don't penalize the box if it makes perfect pair.
+minimize the unusable space.
 */
+
 
 #include <algorithm>
 #include <fstream>

@@ -25,14 +25,14 @@ performance_metric worker(std::string algo_name, int seed, int episode, std::str
 {
     GenerateBox gb;
     if(boxGeneration=="cut1")
-        gb = GenerateBox(seed, "cut1", 0);
+        gb = GenerateBox(seed, "cut1", 50);
     else
-        gb = GenerateBox(seed, "random", 2000);
+        gb = GenerateBox(seed, "random", 50);
     
     read_file.open(read_file_name);
     std::vector<vector_3d> boxes = gb.get_stream_of_boxes();
     // std::cout << boxes.size() << "\n";
-    int bin_limit = 1;
+    int bin_limit = 1000;
     int max_open_bin = openBinCount;
     int lookahead;
     Sim simulator = Sim();
@@ -63,18 +63,18 @@ performance_metric worker(std::string algo_name, int seed, int episode, std::str
         x = new Smart_Algorithm_WithLookahead(gb, simulator, params);
         lookahead = 1;
     }
-    // else if (algo_name == "floor_building") {
-    //     std::cout << "running floor_building.." << episode << " " << seed << "\n";
-    //     x = new Floor_Building(gb, simulator);
-    // }
-    // else  if (algo_name == "first_fit") {
-    //     std::cout << "running first_fit.." << episode << " " << seed << "\n";
-    //     x = new First_Fit(gb, simulator);
-    // }
-    // else if (algo_name == "floor_building_icp") {
-    //     std::cout << "running floor_building_icp.." << episode << " " << seed << "\n";
-    //     x = new Floor_Building_Icp(gb, simulator);
-    // }
+        else if (algo_name == "floor_building_icp") {
+        std::cout << "running floor_building_icp.." << episode << " " << seed << "\n";
+        x = new Floor_Building_Icp(gb, simulator);
+    }
+    else  if (algo_name == "first_fit") {
+        std::cout << "running first_fit.." << episode << " " << seed << "\n";
+        x = new First_Fit(gb, simulator);
+    }
+    else if (algo_name == "floor_building") {
+        std::cout << "running floor_building.." << episode << " " << seed << "\n";
+        x = new Floor_Building(gb, simulator);
+    }
     // else if (algo_name == "smart_algo_without_icp_bcp") {
     //     std::cout << "running smart algorithm without icp bcp.." << episode << " " << seed << "\n";
     //     x = new Smart_Algorithm_WithoutICP_BCP(gb, simulator, params);

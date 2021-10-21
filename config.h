@@ -64,8 +64,7 @@ typedef struct eval_feature {
     double holes;
 } eval_feature;
 bool operator<(const vector_3d &a, const vector_3d &b);
-bool comp_floor_building(std::pair<vector_3d, vector_3d> &a, std::pair<vector_3d, vector_3d> &b);
-bool comp_first_fit(std::pair<vector_3d, vector_3d> &a, std::pair<vector_3d, vector_3d> &b);
+bool comp_floor_building(vector_3d &a, vector_3d &b);
 void print_vector_3d(vector_3d &a);
 void print_list_vector_3d(std::vector<vector_3d> &a);
 void print_pair_vector_3d(std::pair<vector_3d, vector_3d> &a);

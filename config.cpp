@@ -34,16 +34,11 @@ std::pair<int, int> get_start_point(vector_3d pos, int orientation, vector_3d di
     else if(pos.z==3)
         return {pos.x-lx+1, pos.y-ly+1};
 }
-bool comp_floor_building(std::pair<vector_3d, vector_3d> &a, std::pair<vector_3d, vector_3d> &b)
+bool comp_floor_building(vector_3d &a, vector_3d &b)
 {
-    std::pair<vector_3d, vector_3d> temp_a = {{a.first.z, a.first.x, a.first.y}, {a.second.z, a.second.x, a.second.y}};
-    std::pair<vector_3d, vector_3d> temp_b = {{b.first.z, b.first.x, b.first.y}, {b.second.z, b.second.x, b.second.y}};
+    vector_3d temp_a={a.z, a.x, a.y};
+    vector_3d temp_b={b.z, b.x, b.y};
     return temp_a < temp_b;
-}
-
-bool comp_first_fit(std::pair<vector_3d, vector_3d> &a, std::pair<vector_3d, vector_3d> &b)
-{
-    return a < b;
 }
 
 void print_vector_3d(vector_3d &a)

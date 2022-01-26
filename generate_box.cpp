@@ -5,7 +5,7 @@
 GenerateBox::GenerateBox()
 {
 }
-GenerateBox::GenerateBox(int seed, std::string algorithm, int number)
+GenerateBox::GenerateBox(int seed, std::string algorithm, int number, std::string offline)
 {
     // generator = std::mt19937(seed);
     this->seed=seed;
@@ -14,7 +14,7 @@ GenerateBox::GenerateBox(int seed, std::string algorithm, int number)
     max_size = {MAX_BOX_WIDTH, MAX_BOX_LENGTH, MAX_BOX_HEIGHT};
     min_size = {MIN_BOX_WIDTH, MIN_BOX_LENGTH, MIN_BOX_HEIGHT};
     if (algorithm == "cut1")
-        generate_cut1(number);
+        generate_cut1(number, offline);
     else if (algorithm == "random")
     {
         generate_random(number);
@@ -57,12 +57,12 @@ bool GenerateBox::is_valid_item(std::vector<int> &item)
     }
     return true;
 }
-int GenerateBox::generate_cut1(int repeat)
-{
+void GenerateBox::generate_cut1_helper(std::string offline){
     try
     {
         std::vector<std::vector<int>> invalid;
         invalid.push_back(std::vector<int>({BIN_WIDTH, BIN_LENGTH, BIN_HEIGHT, 0, 0, 0}));
+        std::vector<std::vector<int>> unsorted_stream_of_boxes;
         while (invalid.size() > 0)
         {
             // int invalidItemIndex = rand() % invalid.size();
@@ -86,26 +86,48 @@ int GenerateBox::generate_cut1(int repeat)
             item2[axisChosen] = invalidItem[axisChosen] - item1[axisChosen];
             item2[3 + axisChosen] = item2[3 + axisChosen] + item1[axisChosen];
             if (is_valid_item(item1))
-                stream_of_boxes.push_back({item1[0], item1[1], item1[2]});
+                unsorted_stream_of_boxes.push_back(item1);
             else
                 invalid.push_back(item1);
             if (is_valid_item(item2))
-                stream_of_boxes.push_back({item2[0], item2[1], item2[2]});
+                unsorted_stream_of_boxes.push_back(item2);
             else
                 invalid.push_back(item2);
+        }
+        if(offline=="ah"){
+            sort(unsorted_stream_of_boxes.begin(), unsorted_stream_of_boxes.end(), [&](std::vector<int> a, std::vector<int> b){
+                if(a[0]*a[1]==b[0]*b[1])
+                    return a[2]<b[2];
+                return a[0]*a[1]>b[0]*b[1];
+                });
+        }
+        else if(offline=="vh"){
+            sort(unsorted_stream_of_boxes.begin(), unsorted_stream_of_boxes.end(), [&](std::vector<int> a, std::vector<int> b){
+                if(a[0]*a[1]*a[2]==b[0]*b[1]*b[2])
+                    return a[2]<b[2];
+                return a[0]*a[1]*a[2]>b[0]*b[1]*b[2];
+                });
+        }
+        else{
+            sort(unsorted_stream_of_boxes.begin(), unsorted_stream_of_boxes.end(), [&](std::vector<int> a, std::vector<int> b){return a[5]<b[5];});
+        }
+        //std::cout<<"printing"<<"\n";
+        // print_state(unsorted_stream_of_boxes);
+        for(auto i: unsorted_stream_of_boxes){
+            stream_of_boxes.push_back({i[0],i[1],i[2]});
         }
     }
     catch (const std::exception &e)
     {
         std::cerr << e.what() << '\n';
-        return 0;
     }
-    auto temp_boxes = stream_of_boxes;
+    return ;
+}
+int GenerateBox::generate_cut1(int repeat, std::string offline)
+{
     for (int i = 0; i < repeat; i++){
-        stream_of_boxes.insert(stream_of_boxes.end(), temp_boxes.begin(), temp_boxes.end());
-    } 
-    if(repeat)
-        std::shuffle(stream_of_boxes.begin(), stream_of_boxes.end(), generator);
+        generate_cut1_helper(offline);
+    }
     return 1;
 }
 

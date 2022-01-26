@@ -22,11 +22,12 @@ private:
     /* data */
 public:
     GenerateBox(/* args */);
-    GenerateBox(int seed, std::string algorithm, int number = 0);
+    GenerateBox(int seed, std::string algorithm, int number = 0, std::string offline="");
     ~GenerateBox();
 
     bool is_valid_item(std::vector<int> &item);
-    int generate_cut1(int repeat);
+    void generate_cut1_helper(std::string offline);
+    int generate_cut1(int repeat,std::string offline="");
     void generate_cut2();
     int generate_random(int number);
     std::vector<vector_3d> get_stream_of_boxes();

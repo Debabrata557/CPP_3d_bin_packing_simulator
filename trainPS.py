@@ -179,6 +179,7 @@ if __name__ == '__main__':
                                 ["smart_algo" for x in range(NPOPULATION)],
                                 solutions,
                                 [x for x in range(NPOPULATION)],
+                                [False for x in range(NPOPULATION)],
                                 pure=False
                             )
                         )
@@ -254,6 +255,7 @@ if __name__ == '__main__':
                         ["smart_algo" for x in range(test_episode)],
                         [solver.current_param() for x in range(test_episode)],
                         [x for x in range(test_episode)],
+                        [True for x in range(test_episode)],
                         pure=False
                     )
                 )
@@ -285,13 +287,15 @@ if __name__ == '__main__':
         print('test results: ')
         print(row)
 
-    def run_simulation(seed,episode,algo_name, weights=None, gen=None):
+    def run_simulation(seed,episode,algo_name, weights=None, gen=None,test=False):
         filename_in = f'{directory}/weights_{gen}.txt'
         filename_out = f'{directory}/result_{gen}.txt'
         save_weights_to_file(weights,filename_in)
         debug=0
-        boxType="cut1"
+        boxType="random"
         openBinCount=1
+        if test:
+            openBinCount=4
         return run_subproccess(['./build/run',filename_in,filename_out,str(seed),str(episode), algo_name, boxType, str(openBinCount), str(debug)])
 
 

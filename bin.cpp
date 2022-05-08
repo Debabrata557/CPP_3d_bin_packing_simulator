@@ -4,7 +4,8 @@
 
 Bin::Bin(/* args */) {
     bin_state = std::vector<std::vector<int>>(BIN_WIDTH, std::vector<int>(BIN_LENGTH, 0));
-    icpbcp_list = std::vector<vector_3d>({{0, 0, 0},{0, BIN_LENGTH-1,1}, {BIN_WIDTH-1, 0, 2}, {BIN_WIDTH-1, BIN_LENGTH-1, 3}});
+    // icpbcp_list = std::vector<vector_3d>({{0, 0, 0},{0, BIN_LENGTH-1,1}, {BIN_WIDTH-1, 0, 2}, {BIN_WIDTH-1, BIN_LENGTH-1, 3}});
+    icpbcp_list = std::vector<vector_3d>({{0, 0, 0}});
     open = true;
     volume = 0;
     no_of_boxes_placed = 0;
@@ -39,14 +40,12 @@ int Bin::update_state(std::pair<int, int> start_corner, vector_3d dim) {
         return -1;
     }
 
-    return cur_max_height-height;
+    return cur_max_height - height;
 }
-
-
 
 int Bin::update_icpbcp_list(vector_3d pos, vector_3d dim) {
     try {
-        //vector_3d pos = icpbcp_list[icpbcp_idx].first;
+        // vector_3d pos = icpbcp_list[icpbcp_idx].first;
         int x_o = pos.x;
         int y_o = pos.y;
         int corner = pos.z;
@@ -54,25 +53,23 @@ int Bin::update_icpbcp_list(vector_3d pos, vector_3d dim) {
         int w_o = dim.x;
         int l_o = dim.y;
         int h_o = dim.z;
-        if(corner==0){
-            if(x_o+w_o<BIN_WIDTH && bin_state[x_o+w_o][y_o]<BIN_HEIGHT && bin_state[x_o+w_o][y_o]!=bin_state[x_o][y_o])icpbcp_list.push_back({x_o+w_o, y_o, 0});
-            if(y_o+l_o<BIN_LENGTH && bin_state[x_o][y_o+l_o]<BIN_HEIGHT && bin_state[x_o][y_o+l_o]!=bin_state[x_o][y_o])icpbcp_list.push_back({x_o, y_o+l_o, 0});
-        }
-        else if(corner==1){
-            if(x_o+w_o<BIN_WIDTH && bin_state[x_o+w_o][y_o]<BIN_HEIGHT  && bin_state[x_o+w_o][y_o]!=bin_state[x_o][y_o])icpbcp_list.push_back({x_o+w_o, y_o, 1});
-            if(y_o-l_o>=0 && bin_state[x_o][y_o-l_o]<BIN_HEIGHT && bin_state[x_o][y_o-l_o]!=bin_state[x_o][y_o])icpbcp_list.push_back({x_o, y_o-l_o, 1});
-        }
-        else if(corner==2){
-            if(x_o-w_o>=0 && bin_state[x_o-w_o][y_o]<BIN_HEIGHT && bin_state[x_o-w_o][y_o]!=bin_state[x_o][y_o])icpbcp_list.push_back({x_o-w_o, y_o, 2});
-            if(y_o+l_o<BIN_LENGTH && bin_state[x_o][y_o+l_o]<BIN_HEIGHT && bin_state[x_o][y_o+l_o]!=bin_state[x_o][y_o])icpbcp_list.push_back({x_o, y_o+l_o, 2});
+        if (corner == 0) {
+            // if (x_o + w_o < BIN_WIDTH && bin_state[x_o + w_o][y_o] < BIN_HEIGHT && bin_state[x_o + w_o][y_o] != bin_state[x_o][y_o]) icpbcp_list.push_back({x_o + w_o, y_o, 0});
+            // if (y_o + l_o < BIN_LENGTH && bin_state[x_o][y_o + l_o] < BIN_HEIGHT && bin_state[x_o][y_o + l_o] != bin_state[x_o][y_o]) icpbcp_list.push_back({x_o, y_o + l_o, 0});
+            if (x_o + w_o < BIN_WIDTH) icpbcp_list.push_back({x_o + w_o, y_o, 0});
+            if (y_o + l_o < BIN_LENGTH) icpbcp_list.push_back({x_o, y_o + l_o, 0});
+        } else if (corner == 1) {
+            if (x_o + w_o < BIN_WIDTH && bin_state[x_o + w_o][y_o] < BIN_HEIGHT && bin_state[x_o + w_o][y_o] != bin_state[x_o][y_o]) icpbcp_list.push_back({x_o + w_o, y_o, 1});
+            if (y_o - l_o >= 0 && bin_state[x_o][y_o - l_o] < BIN_HEIGHT && bin_state[x_o][y_o - l_o] != bin_state[x_o][y_o]) icpbcp_list.push_back({x_o, y_o - l_o, 1});
+        } else if (corner == 2) {
+            if (x_o - w_o >= 0 && bin_state[x_o - w_o][y_o] < BIN_HEIGHT && bin_state[x_o - w_o][y_o] != bin_state[x_o][y_o]) icpbcp_list.push_back({x_o - w_o, y_o, 2});
+            if (y_o + l_o < BIN_LENGTH && bin_state[x_o][y_o + l_o] < BIN_HEIGHT && bin_state[x_o][y_o + l_o] != bin_state[x_o][y_o]) icpbcp_list.push_back({x_o, y_o + l_o, 2});
 
+        } else {
+            if (x_o - w_o >= 0 && bin_state[x_o - w_o][y_o] < BIN_HEIGHT && bin_state[x_o - w_o][y_o] != bin_state[x_o][y_o]) icpbcp_list.push_back({x_o - w_o, y_o, 3});
+            if (y_o - l_o >= 0 && bin_state[x_o][y_o - l_o] < BIN_HEIGHT && bin_state[x_o][y_o - l_o] != bin_state[x_o][y_o]) icpbcp_list.push_back({x_o, y_o - l_o, 3});
         }
-        else{
-            if(x_o-w_o>=0 && bin_state[x_o-w_o][y_o]<BIN_HEIGHT && bin_state[x_o-w_o][y_o]!=bin_state[x_o][y_o])icpbcp_list.push_back({x_o-w_o, y_o, 3});
-            if(y_o-l_o>=0 && bin_state[x_o][y_o-l_o]<BIN_HEIGHT && bin_state[x_o][y_o-l_o]!=bin_state[x_o][y_o])icpbcp_list.push_back({x_o, y_o-l_o, 3});
-        }
-        //std::cout<<icpbcp_list.size()<<"\n";
-
+        // std::cout<<icpbcp_list.size()<<"\n";
 
     } catch (const std::exception &e) {
         std::cerr << e.what() << '\n';
@@ -92,6 +89,6 @@ void Bin::print_state() {
 std::vector<std::vector<int>> Bin::get_state() {
     return bin_state;
 }
-std::vector<vector_3d>& Bin::get_icbp_list() {
+std::vector<vector_3d> &Bin::get_icbp_list() {
     return icpbcp_list;
 }

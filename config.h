@@ -4,9 +4,9 @@
 #ifndef config
 #define config
 const int DEBUG = 0;
-const int BIN_WIDTH = 120;  //x
+const int BIN_WIDTH = 120;  // x
 const int BIN_HEIGHT = 120;
-const int BIN_LENGTH = 180;  //y
+const int BIN_LENGTH = 180;  // y
 const int MAX_BOX_LENGTH = 60;
 const int MAX_BOX_WIDTH = 60;
 const int MAX_BOX_HEIGHT = 60;
@@ -22,8 +22,8 @@ const int STRIDE = 20;
 const int EXTRACT_FEATURE_AREA = 70;
 const int NUM_FEATURES = 80;
 
-//const int NPARAMS_X = (BIN_WIDTH+STRIDE-1)/STRIDE; //without symmetry
-//const int NPARAMS_Y = (BIN_LENGTH+STRIDE-1)/STRIDE;
+// const int NPARAMS_X = (BIN_WIDTH+STRIDE-1)/STRIDE; //without symmetry
+// const int NPARAMS_Y = (BIN_LENGTH+STRIDE-1)/STRIDE;
 
 const int NPARAMS_X = ((BIN_WIDTH / 2) + STRIDE - 1) / STRIDE;  // with symmetry
 const int NPARAMS_Y = ((BIN_LENGTH / 2) + STRIDE - 1) / STRIDE;

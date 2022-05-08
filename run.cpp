@@ -1,5 +1,5 @@
 /*
-./build/run test_dir/weights_1.txt test_dir/result_1.txt 0
+./build/run test_dir/bestWeights.txt out 0 100 first_fit_icp random 1 1
 */
 
 #include <fstream>
@@ -21,14 +21,14 @@
 std::ifstream read_file;
 std::ofstream write_file;
 
-performance_metric worker(std::string algo_name, int seed, int episode, std::string read_file_name, std::string boxGeneration, int openBinCount)  //episode number is seed
+performance_metric worker(std::string algo_name, int seed, int episode, std::string read_file_name, std::string boxGeneration, int openBinCount)  // episode number is seed
 {
     GenerateBox gb;
-    if(boxGeneration=="cut1")
+    if (boxGeneration == "cut1")
         gb = GenerateBox(seed, "cut1", 50);
     else
-        gb = GenerateBox(seed, "random", 50);
-    
+        gb = GenerateBox(seed, "random", 300);
+
     read_file.open(read_file_name);
     std::vector<vector_3d> boxes = gb.get_stream_of_boxes();
     // std::cout << boxes.size() << "\n";
@@ -42,36 +42,33 @@ performance_metric worker(std::string algo_name, int seed, int episode, std::str
     // int NPARAMS_X = (EXTRACT_FEATURE_AREA+STRIDE-1)/STRIDE;
     // int NPARAMS_Y = (EXTRACT_FEATURE_AREA+STRIDE-1)/STRIDE; /// this should be integer.Discreteization factor must be a factor of BIN_WIDTH and BIN_LENGTH
     std::vector<double> params;
-    while(true){
+    while (true) {
         double x;
-        read_file>>x;
-        if(read_file.eof())break;
+        read_file >> x;
+        if (read_file.eof()) break;
         params.push_back(x);
     }
-    assert(TOTAL_PARAMS==params.size());
+
     Base* x;
     if (algo_name == "first_fit_icp") {
         std::cout << "running first_fit_icp.." << episode << " " << seed << "\n";
         x = new First_Fit_Icp(gb, simulator);
-    }
-    else if (algo_name == "smart_algo") {
+    } else if (algo_name == "smart_algo") {
+        assert(TOTAL_PARAMS == params.size());
         std::cout << "running smart algorithm.." << episode << " " << seed << "\n";
         x = new Smart_Algorithm(gb, simulator, params);
-    }
-    else if (algo_name == "smart_algo_with_lookahead") {
+    } else if (algo_name == "smart_algo_with_lookahead") {
+        assert(TOTAL_PARAMS == params.size());
         std::cout << "running smart algorithm with lookahead.." << episode << " " << seed << "\n";
         x = new Smart_Algorithm_WithLookahead(gb, simulator, params);
         lookahead = 1;
-    }
-        else if (algo_name == "floor_building_icp") {
+    } else if (algo_name == "floor_building_icp") {
         std::cout << "running floor_building_icp.." << episode << " " << seed << "\n";
         x = new Floor_Building_Icp(gb, simulator);
-    }
-    else  if (algo_name == "first_fit") {
+    } else if (algo_name == "first_fit") {
         std::cout << "running first_fit.." << episode << " " << seed << "\n";
         x = new First_Fit(gb, simulator);
-    }
-    else if (algo_name == "floor_building") {
+    } else if (algo_name == "floor_building") {
         std::cout << "running floor_building.." << episode << " " << seed << "\n";
         x = new Floor_Building(gb, simulator);
     }
@@ -80,9 +77,9 @@ performance_metric worker(std::string algo_name, int seed, int episode, std::str
     //     x = new Smart_Algorithm_WithoutICP_BCP(gb, simulator, params);
     //     lookahead = 0;
     // }
-    //Base* x = new Smart_Algorithm_WithLookahead(gb, simulator, params);
-    //Base* x = new Random_Algorithm(gb, simulator);
-    //Base* x = new Smart_Algorithm2(gb, simulator, params);
+    // Base* x = new Smart_Algorithm_WithLookahead(gb, simulator, params);
+    // Base* x = new Random_Algorithm(gb, simulator);
+    // Base* x = new Smart_Algorithm2(gb, simulator, params);
     performance_metric pm = x->execute(simulator, lookahead);
     std::cout << pm.efficiency << std::endl;
 
@@ -102,12 +99,12 @@ int main(int argc, char** argv) {
     if (!debug)
         std::cout.setstate(std::ios_base::failbit);
     write_file.open(write_file_name);
-    //std::thread threadHandles[episode];
+    // std::thread threadHandles[episode];
     clock_t start_time = clock();
     int episode = std::stoi(argv[4]);
     ;
     int seed = std::stoi(argv[3]);
-    //std::thread threadHandles[episode];
+    // std::thread threadHandles[episode];
     double efficiency = 0;
     double no_of_bins = 0;
     double total_boxes = 0;
@@ -121,7 +118,7 @@ int main(int argc, char** argv) {
         for (int i = 0; i < num_threads; i++) {
             threadHandles[i] = std::async(worker, algo_name, seed, k * num_threads + i, read_file_name, boxGeneration, openBinCount);
             if (!constant_seed) seed++;
-            //threadHandles[i] = std::thread(worker, i);
+            // threadHandles[i] = std::thread(worker, i);
         }
 
         for (long long i = 0; i < num_threads; i++) {
@@ -129,13 +126,13 @@ int main(int argc, char** argv) {
             if (pm.efficiency < mineff) {
                 mineff = pm.efficiency;
                 minseed = seed;
-                //minep=k*num_threads+i;
+                // minep=k*num_threads+i;
             }
             efficiency += pm.efficiency;
             no_of_bins += pm.number_of_bins_used;
             total_boxes += pm.total_number_of_boxes;
             boxes_put += pm.number_of_boxes_successfully_put;
-            //threadHandles[i].join();
+            // threadHandles[i].join();
         }
         // std::cout << k << "\n";
     }
@@ -148,7 +145,7 @@ int main(int argc, char** argv) {
     std::cout << "min efficiency"
               << " " << mineff << "\n";
     std::cout << "min seed"
-              << " " << minseed-1 << "\n";
+              << " " << minseed - 1 << "\n";
 
     clock_t end_time = clock();
 

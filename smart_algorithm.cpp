@@ -29,20 +29,20 @@ class Smart_Algorithm : public Base {
         double max_score = -DBL_MAX;
         int idx = -1;
         int ori = -1;
-        int bin_id=-1;
-        for(int s=0;s<simulator.bin_instances.size(); s++){
-            auto cur_bin=simulator.bin_instances[s];
-            if(!cur_bin.is_open())continue;
+        int bin_id = -1;
+        for (int s = 0; s < simulator.bin_instances.size(); s++) {
+            auto cur_bin = simulator.bin_instances[s];
+            if (!cur_bin.is_open()) continue;
             auto icpbcp_list = cur_bin.get_icbp_list();
             auto cur_state = cur_bin.get_state();
             for (int i = 0; i < icpbcp_list.size(); i++) {
                 if (check_without_precomputation(cur_state, icpbcp_list[i], dim)) {
-                    auto icp_bcp = icpbcp_list[i];
-                    auto start_point =get_start_point(icp_bcp, 0, dim);
+                    vector_3d icp_bcp = {icpbcp_list[i].x + 2, icpbcp_list[i].y + 2, icpbcp_list[i].z};
+                    auto start_point = get_start_point(icp_bcp, 0, dim);
                     int holes = find_holes(cur_state, start_point, dim);
                     Bin temp_bin = cur_bin;
                     temp_bin.update_state(start_point, dim);
-                    temp_bin.volume+=dim.x*dim.y*dim.z;
+                    temp_bin.volume += dim.x * dim.y * dim.z;
                     eval_feature x;
                     x.holes = holes;
                     std::vector<double> features = extract_state_features_with_symmetry(temp_bin, x, dim, start_point.first, start_point.second);
@@ -52,18 +52,18 @@ class Smart_Algorithm : public Base {
                         idx = i;
                         max_score = temp_max;
                         ori = 0;
-                        bin_id=s;
+                        bin_id = s;
                     }
                 }
                 vector_3d rotated_dim = {dim.y, dim.x, dim.z};
                 lx = rotated_dim.x, ly = rotated_dim.y, lz = rotated_dim.z;
                 if (check_without_precomputation(cur_state, icpbcp_list[i], rotated_dim)) {
-                    auto icp_bcp = icpbcp_list[i];
-                    auto start_point =get_start_point(icp_bcp, 1, dim);
+                    vector_3d icp_bcp = {icpbcp_list[i].x + 2, icpbcp_list[i].y + 2, icpbcp_list[i].z};
+                    auto start_point = get_start_point(icp_bcp, 1, dim);
                     int holes = find_holes(cur_state, start_point, rotated_dim);
                     Bin temp_bin = cur_bin;
                     temp_bin.update_state(start_point, rotated_dim);
-                    temp_bin.volume+=rotated_dim.x*rotated_dim.y*rotated_dim.z;
+                    temp_bin.volume += rotated_dim.x * rotated_dim.y * rotated_dim.z;
                     eval_feature x;
                     x.holes = holes;
                     std::vector<double> features = extract_state_features_with_symmetry(temp_bin, x, rotated_dim, start_point.first, start_point.second);
@@ -73,12 +73,12 @@ class Smart_Algorithm : public Base {
                         idx = i;
                         max_score = temp_max;
                         ori = 1;
-                        bin_id=s;
+                        bin_id = s;
                     }
                 }
             }
         }
-        
+
         return {idx, ori, bin_id};
     }
 
@@ -89,27 +89,27 @@ class Smart_Algorithm : public Base {
         this->params = params;
     }
     bool put_box(Sim &simulator, vector_3d box) {
-        //std::vector<std::vector<int>> cur_state = simulator.bin_instances[bin_id].get_state();
-        // bin_instance.print_state();
-        //precompute_max_min(cur_state);
+        // std::vector<std::vector<int>> cur_state = simulator.bin_instances[bin_id].get_state();
+        //  bin_instance.print_state();
+        // precompute_max_min(cur_state);
         auto idx_ori_bin = get_action(simulator, box);
-        if(idx_ori_bin.z==-1)return 0;
+        if (idx_ori_bin.z == -1) return 0;
         auto icp_bcp = simulator.bin_instances[idx_ori_bin.z].get_icbp_list()[idx_ori_bin.x];
         // std::cout << idx_ori.first << "\n";
         if (idx_ori_bin.x >= 0) {
             int height = simulator.step(idx_ori_bin.z, idx_ori_bin.x, box, idx_ori_bin.y);
-            auto start_point=get_start_point(icp_bcp, idx_ori_bin.y, box);
+            auto start_point = get_start_point(icp_bcp, idx_ori_bin.y, box);
             write_file << idx_ori_bin.z << " " << box.x << " " << box.y << " " << box.z << " " << start_point.first << " " << start_point.second << " " << height << " " << idx_ori_bin.y << "\n";
             return height != -1;
         } else {
             write_file << idx_ori_bin.z << " " << box.x << " " << box.y << " " << box.z << " " << icp_bcp.x << " " << icp_bcp.y << " " << -1 << " " << idx_ori_bin.y << "\n";
-            //std::cout << "could not place the box" << std::endl;
+            // std::cout << "could not place the box" << std::endl;
         }
         return 0;
     }
     int evaluate(std::vector<double> &features) {
         double sum = 0;
-        //assert params.size()==features.size();
+        // assert params.size()==features.size();
         for (int i = 0; i < features.size(); i++) {
             sum += features[i] * params[i];
         }
@@ -118,32 +118,32 @@ class Smart_Algorithm : public Base {
     }
     double evaluate_with_symmetry(std::vector<double> &features) {
         double sum = 0;
-        //assert params.size()==features.size();
-        for(int i=0;i<BIAS_HOLE;i++){
-            sum+=params[i]*features[i];
+        // assert params.size()==features.size();
+        for (int i = 0; i < BIAS_HOLE; i++) {
+            sum += params[i] * features[i];
         }
         int j = BIAS_HOLE;
 
         for (int i = BIAS_HOLE; i < POOL_PARAMS + BIAS_HOLE; i++, j++) {
             sum += features[j] * params[i];
-            assert(j<features.size());
+            assert(j < features.size());
         }
         for (int i = BIAS_HOLE; i < POOL_PARAMS + BIAS_HOLE; i++, j++) {
             sum += features[j] * params[i];
-            assert(j<features.size());
+            assert(j < features.size());
         }
         for (int i = BIAS_HOLE; i < POOL_PARAMS + BIAS_HOLE; i++, j++) {
             sum += features[j] * params[i];
-            assert(j<features.size());
+            assert(j < features.size());
         }
         for (int i = BIAS_HOLE; i < POOL_PARAMS + BIAS_HOLE; i++, j++) {
             sum += features[j] * params[i];
-            assert(j<features.size());
+            assert(j < features.size());
         }
         for (int i = BIAS_HOLE + POOL_PARAMS; i < BOUNDARY_PARAMS + BIAS_HOLE + POOL_PARAMS; i++, j++) {
             sum += features[j] * params[i];
-            //std::cout<<j<<" "<<features.size()<<std::endl;
-            assert(j<features.size());
+            // std::cout<<j<<" "<<features.size()<<std::endl;
+            assert(j < features.size());
         }
         // std::cout<<sum<<"\n";
         return sum;
@@ -318,7 +318,7 @@ class Smart_Algorithm : public Base {
         extract_border_feature(cur_state, dim, pos_x, pos_y, x);
         features.push_back(1);
         features.push_back(x.holes / (0.5 * BIN_HEIGHT * BIN_LENGTH * BIN_WIDTH));
-        features.push_back(cur_bin.volume/(BIN_HEIGHT * BIN_LENGTH * BIN_WIDTH));
+        features.push_back(cur_bin.volume / (BIN_HEIGHT * BIN_LENGTH * BIN_WIDTH));
         features.push_back(*std::max_element(x.max_pool.begin(), x.max_pool.end()));
         features.push_back(*std::min_element(x.min_pool.begin(), x.min_pool.end()));
         int max_pool_idx = 0, min_pool_idx = 0, avg_pool_idx = 0;
@@ -337,7 +337,7 @@ class Smart_Algorithm : public Base {
             features.push_back(i * 1.0 / BIN_HEIGHT);
         }
         int cur_size = features.size();
-        for (int i = cur_size; i < BIAS_HOLE+4*POOL_PARAMS+BOUNDARY_PARAMS; i++) {
+        for (int i = cur_size; i < BIAS_HOLE + 4 * POOL_PARAMS + BOUNDARY_PARAMS; i++) {
             features.push_back(0);
         }
         return features;
@@ -359,6 +359,6 @@ class Smart_Algorithm : public Base {
         }
         write_file.close();
 
-        return simulator.get_performance_metric(1);
+        return simulator.get_performance_metric(0);
     }
 };

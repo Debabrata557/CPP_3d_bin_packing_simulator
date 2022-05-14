@@ -5,7 +5,13 @@
 Bin::Bin(/* args */) {
     bin_state = std::vector<std::vector<int>>(BIN_WIDTH, std::vector<int>(BIN_LENGTH, 0));
     // icpbcp_list = std::vector<vector_3d>({{0, 0, 0},{0, BIN_LENGTH-1,1}, {BIN_WIDTH-1, 0, 2}, {BIN_WIDTH-1, BIN_LENGTH-1, 3}});
-    icpbcp_list = std::vector<vector_3d>({{0, 0, 0}});
+    // icpbcp_list = std::vector<vector_3d>({{0, 0, 0}});
+    icpbcp_list=std::vector<vector_3d>(BIN_WIDTH*BIN_LENGTH);
+    for(int i=0;i<BIN_WIDTH;i++){
+        for(int j=0;j<BIN_LENGTH;j++){
+            icpbcp_list[i*BIN_LENGTH+j]={i,j,0};
+        }
+    }
     open = true;
     volume = 0;
     no_of_boxes_placed = 0;
@@ -44,7 +50,7 @@ int Bin::update_state(std::pair<int, int> start_corner, vector_3d dim) {
 }
 
 int Bin::update_icpbcp_list(vector_3d pos, vector_3d dim) {
-    try {
+   /* try {
         // vector_3d pos = icpbcp_list[icpbcp_idx].first;
         int x_o = pos.x;
         int y_o = pos.y;
@@ -75,7 +81,7 @@ int Bin::update_icpbcp_list(vector_3d pos, vector_3d dim) {
         std::cerr << e.what() << '\n';
         return -1;
     }
-
+*/
     return 1;
 }
 void Bin::print_state() {

@@ -30,7 +30,18 @@ class Smart_Algorithm : public Base {
         int idx = -1;
         int ori = -1;
         int bin_id = -1;
+        std::vector<std::pair<double, int>> efficiency_sorted_bins;
         for (int s = 0; s < simulator.bin_instances.size(); s++) {
+            auto cur_bin = simulator.bin_instances[s];
+            if (!cur_bin.is_open()) continue;
+            efficiency_sorted_bins.push_back({cur_bin.volume, s});
+
+        }
+        // sort(efficiency_sorted_bins.begin(), efficiency_sorted_bins.end(), std::greater<std::pair<double, int>>());
+        // if(efficiency_sorted_bins.size()!=0)
+        //     std::cout<<efficiency_sorted_bins[0].first<<" "<<efficiency_sorted_bins[efficiency_sorted_bins.size()-1].first<<std::endl;
+        for (auto b: efficiency_sorted_bins) {
+            int s=b.second;
             auto cur_bin = simulator.bin_instances[s];
             if (!cur_bin.is_open()) continue;
             auto icpbcp_list = cur_bin.get_icbp_list();
@@ -77,6 +88,10 @@ class Smart_Algorithm : public Base {
                     }
                 }
             }
+            if(idx!=-1)
+                return {idx, ori, bin_id};
+
+
         }
 
         return {idx, ori, bin_id};
@@ -252,26 +267,29 @@ class Smart_Algorithm : public Base {
 
     void extract_border_feature(std::vector<std::vector<int>> &after_state, vector_3d &dim, int pos_x, int pos_y, eval_feature &x) {
         int sum = 0;
+        // std::cout<<"\n\n\nstate:";
+        // print_state(after_state);
+        int margin=2;
         for (int i = pos_x; i < pos_x + dim.x; i += BOUNDARY_STRIDE) {
-            if (pos_y > 0) {
-                x.border_features.push_back(abs(after_state[i][pos_y] - after_state[i][pos_y - 1]));
+            if (pos_y-1-margin >= 0) {
+                x.border_features.push_back(abs(after_state[i][pos_y+1] - after_state[i][pos_y - 1-margin]));
             } else {
                 x.border_features.push_back(0);
             }
-            if (pos_y + dim.y < BIN_LENGTH) {
-                x.border_features.push_back(abs(after_state[i][pos_y + dim.y] - after_state[i][pos_y + dim.y - 1]));
+            if (pos_y + dim.y+margin < BIN_LENGTH) {
+                x.border_features.push_back(abs(after_state[i][pos_y + dim.y+margin] - after_state[i][pos_y + dim.y - 2]));
             } else {
                 x.border_features.push_back(0);
             }
         }
         for (int i = pos_y; i < pos_y + dim.y; i += BOUNDARY_STRIDE) {
-            if (pos_x > 0) {
-                x.border_features.push_back(abs(after_state[pos_x][i] - after_state[pos_x - 1][i]));
+            if (pos_x-1-margin >=0) {
+                x.border_features.push_back(abs(after_state[pos_x+1][i] - after_state[pos_x - 1-margin][i]));
             } else {
                 x.border_features.push_back(0);
             }
-            if (pos_x + dim.x < BIN_WIDTH) {
-                x.border_features.push_back(abs(after_state[pos_x + dim.x][i] - after_state[pos_x + dim.x - 1][i]));
+            if (pos_x + dim.x+margin < BIN_WIDTH) {
+                x.border_features.push_back(abs(after_state[pos_x + dim.x+margin][i] - after_state[pos_x + dim.x - 2][i]));
             } else {
                 x.border_features.push_back(0);
             }
@@ -340,6 +358,7 @@ class Smart_Algorithm : public Base {
         for (int i = cur_size; i < BIAS_HOLE + 4 * POOL_PARAMS + BOUNDARY_PARAMS; i++) {
             features.push_back(0);
         }
+        // std::cout<<features.size()<<std::endl;
         return features;
     }
 

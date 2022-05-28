@@ -119,14 +119,14 @@ if __name__ == '__main__':
             solutions = solver.ask()
 
             fitness_list_futures = []
-            seed = np.random.randint(0,1000)
+            seed = 0 #np.random.randint(0,1000)
             #seed=0
             fitness_list_futures.append(
                             client.map(
                                 fit_func,
                                 [seed for x in range(NPOPULATION)],
                                 [1 for x in range(NPOPULATION)],
-                                ["smart_algo3" for x in range(NPOPULATION)],
+                                ["smart_algo4" for x in range(NPOPULATION)],
                                 solutions,
                                 [x for x in range(NPOPULATION)],
                                 [False for x in range(NPOPULATION)],
@@ -207,7 +207,7 @@ if __name__ == '__main__':
                         fit_func,
                         [seed+x for x in range(test_episode)],
                         [1 for x in range(test_episode)],
-                        ["smart_algo3" for x in range(test_episode)],
+                        ["smart_algo4" for x in range(test_episode)],
                         [solver.current_param() for x in range(test_episode)],
                         [x for x in range(test_episode)],
                         [True for x in range(test_episode)],

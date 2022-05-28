@@ -29,14 +29,17 @@ private:
             for (int j = 0; j < BIN_LENGTH; j++)
             {
                 int flag = check_with_precomputation(state, {i, j, 0}, {lx, ly, lz});
-                if (flag && min_height > score(state, {i, j}, {lx, ly, lz}))
+                int s;
+                if (flag && min_height > (s=score(state, {i, j}, {lx, ly, lz})))
                 {
                     pos_orientation = {i, j, 0};
+                    min_height =s;
                 }
                 flag = check_with_precomputation(state, {i, j, 0}, {ly, lx, lz});
-                if (flag && min_height > score(state, {i, j}, {ly, lx, lz}))
+                if (flag && min_height > (s=score(state, {i, j}, {ly, lx, lz})))
                 {
                     pos_orientation = {i, j, 1};
+                    min_height =s;
                 }
             }
         }
@@ -93,6 +96,6 @@ public:
             }
         }
 
-        return simulator.get_performance_metric(1);
+        return simulator.get_performance_metric(0);
     }
 };

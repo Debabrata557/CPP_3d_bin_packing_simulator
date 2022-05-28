@@ -122,7 +122,7 @@ class Smart_Algorithm : public Base {
         }
         return 0;
     }
-    int evaluate(std::vector<double> &features) {
+    double evaluate(std::vector<double> &features) {
         double sum = 0;
         // assert params.size()==features.size();
         for (int i = 0; i < features.size(); i++) {
@@ -264,6 +264,57 @@ class Smart_Algorithm : public Base {
             }
         }
     }
+    /*//tota weights array is of size 85(36, 25, 24)
+    //use 6X6 filter1 here with stride 6X6
+    //use 5X5 filter2 here with stride 5X5
+    double Convolve_and_evaluate(std::vector<std::vector<int>> &after_state, std::vector<double> &weights){
+        std::vector<std::vector<double>> filter1(6, std::vector<double>(6));
+        std::vector<std::vector<double>> filter2(5, std::vector<double>(5));;
+        int w=0;
+        for(int m=0;m<6;m++){
+            for(int n=0;n<6;n++){
+                filter1[m][n]=weights[w++];
+            }
+        }
+        for(int m=0;m<5;m++){
+            for(int n=0;n<5;n++){
+                filter2[m][n]=weights[w++];
+            }
+        }
+        std::vector<std::vector<double>> Out1(20, std::vector<double>(30, 0));
+        std::vector<std::vector<double>> Out2(4, std::vector<double>(6, 0));
+        for(int i=0;i<20;i++){
+            for(int j=0;j<30;j++){
+                for(int m=0;m<6;m++){
+                    for(int n=0;n<6;n++){
+                        Out1[i][j]+=after_state[6*i+m][6*j+n]*filter1[m][n];
+                        // maxPool[i][j]=std::max(maxPool[i][j], after_state[6*i+m][6*j+n]);
+                        // minPool[i][j]=std::min(minPool[i][j], after_state[6*i+m][6*j+n]);
+                    }
+                }
+            }
+        }
+        for(int i=0;i<4;i++){
+            for(int j=0;j<6;j++){
+                for(int m=0;m<5;m++){
+                    for(int n=0;n<5;n++){
+                        Out2[i][j]+=Out1[6*i+m][6*j+n]*filter2[m][n];
+                        // maxPool[i][j]=std::max(maxPool[i][j], after_state[6*i+m][6*j+n]);
+                        // minPool[i][j]=std::min(minPool[i][j], after_state[6*i+m][6*j+n]);
+                    }
+                }
+            }
+        }
+        //evaluate
+        double sum=0;
+        for(int m=0;m<4;m++){
+            for(int n=0;n<6;n++){
+                sum+=Out2[m][n]*weights[w++];
+            }
+        }
+        return sum;
+    }*/
+
 
     void extract_border_feature(std::vector<std::vector<int>> &after_state, vector_3d &dim, int pos_x, int pos_y, eval_feature &x) {
         int sum = 0;
@@ -337,8 +388,8 @@ class Smart_Algorithm : public Base {
         features.push_back(1);
         features.push_back(x.holes / (0.5 * BIN_HEIGHT * BIN_LENGTH * BIN_WIDTH));
         features.push_back(cur_bin.volume / (BIN_HEIGHT * BIN_LENGTH * BIN_WIDTH));
-        features.push_back(*std::max_element(x.max_pool.begin(), x.max_pool.end()));
-        features.push_back(*std::min_element(x.min_pool.begin(), x.min_pool.end()));
+        features.push_back(1.0*(*std::max_element(x.max_pool.begin(), x.max_pool.end()))/BIN_HEIGHT);
+        features.push_back(1.0*(*std::min_element(x.min_pool.begin(), x.min_pool.end()))/BIN_HEIGHT);
         int max_pool_idx = 0, min_pool_idx = 0, avg_pool_idx = 0;
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < x.max_pool.size() / 4; j++, max_pool_idx++) {

@@ -29,11 +29,11 @@ const int NPARAMS_X = ((BIN_WIDTH / 2) + STRIDE - 1) / STRIDE;  // with symmetry
 const int NPARAMS_Y = ((BIN_LENGTH / 2) + STRIDE - 1) / STRIDE;
 
 const int POOL_PARAMS = 3 * NPARAMS_X * NPARAMS_Y;
-
+// const int POOL_PARAMS = 0;
 const int BOUNDARY_STRIDE = 5;
 const int BOUNDARY_PARAMS = MAX_BOX_LENGTH * 2 / BOUNDARY_STRIDE + 2 * MAX_BOX_WIDTH / BOUNDARY_STRIDE;
-const int BIAS_HOLE = 5;
-const int TOTAL_PARAMS = POOL_PARAMS + BOUNDARY_PARAMS + BIAS_HOLE;
+const int BIAS_HOLE = 10;
+const int TOTAL_PARAMS = BOUNDARY_PARAMS + BIAS_HOLE+POOL_PARAMS;
 
 typedef struct vector_3d {
     int x, y, z;
@@ -62,6 +62,9 @@ typedef struct eval_feature {
     std::vector<double> border_features;
     double border_diff_height;
     double holes;
+    double g_var;
+    double g_flush;
+    double g_high;
 } eval_feature;
 bool operator<(const vector_3d &a, const vector_3d &b);
 bool comp_floor_building(vector_3d &a, vector_3d &b);

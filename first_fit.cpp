@@ -82,6 +82,6 @@ public:
             }
         }
         write_file.close();
-        return simulator.get_performance_metric(1);
+        return simulator.get_performance_metric(0);
     }
 };

@@ -16,18 +16,20 @@
 #include "smart_algo_withlookahead.cpp"
 #include "smart_algorithm.cpp"
 #include "smart_algorithm2.cpp"
+#include "smart_algorithm4.cpp"
 #include "smart_algorithm_without_icp_bcp.cpp"
+#include "smart_algorithm3.cpp"
 
 std::ifstream read_file;
 std::ofstream write_file;
 
-performance_metric worker(std::string algo_name, int seed, int episode, std::string read_file_name, std::string boxGeneration, int openBinCount)  // episode number is seed
+performance_metric worker(std::string algo_name, int seed, int episode, std::string read_file_name, std::string boxGeneration, int openBinCount, int no_of_random_boxes=300)  // episode number is seed
 {
     GenerateBox gb;
     if (boxGeneration == "cut1")
         gb = GenerateBox(seed, "cut1", 50);
     else
-        gb = GenerateBox(seed, "random", 300);
+        gb = GenerateBox(seed, "random", no_of_random_boxes);
 
     read_file.open(read_file_name);
     std::vector<vector_3d> boxes = gb.get_stream_of_boxes();
@@ -58,7 +60,17 @@ performance_metric worker(std::string algo_name, int seed, int episode, std::str
         assert(TOTAL_PARAMS == params.size());
         std::cout << "running smart algorithm.." << episode << " " << seed << "\n";
         x = new Smart_Algorithm(gb, simulator, params);
-    } else if (algo_name == "smart_algo_with_lookahead") {
+    } else if (algo_name == "smart_algo3") {
+        assert(TOTAL_PARAMS == params.size());
+        std::cout << "running smart algorithm3.." << episode << " " << seed << "\n";
+        x = new Smart_Algorithm3(gb, simulator, params);
+    }else if(algo_name == "smart_algo4"){
+        assert(TOTAL_PARAMS == params.size());
+        std::cout << "running smart algorithm4.." << episode << " " << seed << "\n";
+        x = new Smart_Algorithm4(gb, simulator, params);
+    } 
+    
+    else if (algo_name == "smart_algo_with_lookahead") {
         //std::cout<<params.size()<<std::endl;
         assert(TOTAL_PARAMS == params.size());
         std::cout << "running smart algorithm with lookahead.." << episode << " " << seed << "\n";
@@ -98,6 +110,7 @@ int main(int argc, char** argv) {
     std::string boxGeneration = argv[6];
     int openBinCount = std::stoi(argv[7]);
     int debug = std::stoi(argv[8]);
+    int no_of_random_boxes = std::stoi(argv[9]);
     if (!debug)
         std::cout.setstate(std::ios_base::failbit);
     write_file.open(write_file_name);
@@ -118,7 +131,7 @@ int main(int argc, char** argv) {
     for (int k = 0; k < episode / num_threads; k++) {
         std::vector<std::future<performance_metric>> threadHandles(num_threads);
         for (int i = 0; i < num_threads; i++) {
-            threadHandles[i] = std::async(worker, algo_name, seed, k * num_threads + i, read_file_name, boxGeneration, openBinCount);
+            threadHandles[i] = std::async(worker, algo_name, seed, k * num_threads + i, read_file_name, boxGeneration, openBinCount, no_of_random_boxes);
             if (!constant_seed) seed++;
             // threadHandles[i] = std::thread(worker, i);
         }
